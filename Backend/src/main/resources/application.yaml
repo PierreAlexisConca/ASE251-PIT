@@ -1,0 +1,25 @@
+server:
+  port: ${PORT:8086}
+  url: ${SERVER_URL:http://localhost:8086}
+
+spring:
+  application:
+    name: PIT
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;databaseName=model;encrypt=true;trustServerCertificate=true
+    username: sa
+    password: Alexis123!
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  jpa:
+    database-platform: org.hibernate.dialect.SQLServerDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
