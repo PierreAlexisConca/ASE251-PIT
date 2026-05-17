@@ -3,6 +3,8 @@
   pagePath="Inicio / Almacen / Inventario"
   active="inventario"
 >
+  <div class="loading-bar" *ngIf="loading">Cargando productos...</div>
+
   <div class="toolbar">
     <div class="search-box">
       🔍
@@ -25,17 +27,37 @@
   </div>
 
   <div class="tabs">
-    <button class="tab" [class.active]="activeTab === 'Todos'" (click)="setTab('Todos')">Todos ({{ categoryCounts.Todos }})</button>
-    <button class="tab" [class.active]="activeTab === 'Granos'" (click)="setTab('Granos')">Granos ({{ categoryCounts.Granos }})</button>
-    <button class="tab" [class.active]="activeTab === 'Insumos'" (click)="setTab('Insumos')">Insumos ({{ categoryCounts.Insumos }})</button>
-    <button class="tab" [class.active]="activeTab === 'Fertilizantes'" (click)="setTab('Fertilizantes')">Fertilizantes ({{ categoryCounts.Fertilizantes }})</button>
-    <button class="tab" [class.active]="activeTab === 'Herramientas'" (click)="setTab('Herramientas')">Herramientas ({{ categoryCounts.Herramientas }})</button>
+    <button class="tab" [class.active]="activeTab === 'Todos'" (click)="setTab('Todos')">
+      Todos ({{ categoryCounts.Todos }})
+    </button>
+    <button class="tab" [class.active]="activeTab === 'Granos'" (click)="setTab('Granos')">
+      Granos ({{ categoryCounts.Granos }})
+    </button>
+    <button class="tab" [class.active]="activeTab === 'Insumos'" (click)="setTab('Insumos')">
+      Insumos ({{ categoryCounts.Insumos }})
+    </button>
+    <button
+      class="tab"
+      [class.active]="activeTab === 'Fertilizantes'"
+      (click)="setTab('Fertilizantes')"
+    >
+      Fertilizantes ({{ categoryCounts.Fertilizantes }})
+    </button>
+    <button
+      class="tab"
+      [class.active]="activeTab === 'Herramientas'"
+      (click)="setTab('Herramientas')"
+    >
+      Herramientas ({{ categoryCounts.Herramientas }})
+    </button>
     <button class="tab clear-tab" type="button" (click)="clearFilters()">Limpiar filtros</button>
   </div>
 
   <div class="table-card">
     <div class="table-header">
-      <div class="table-info">Mostrando {{ filteredProducts.length }} de {{ products.length }} productos</div>
+      <div class="table-info">
+        Mostrando {{ filteredProducts.length }} de {{ products.length }} productos
+      </div>
       <button class="filter-btn sort-btn">↕ Ordenar por: Stock</button>
     </div>
 
@@ -56,17 +78,48 @@
         <tbody>
           <tr *ngFor="let product of filteredProducts; trackBy: trackByProductId">
             <td class="code">{{ product.codigo }}</td>
-            <td><div class="prod-name">{{ product.nombre }}</div><div class="prod-code">{{ product.detalle }}</div></td>
-            <td><span class="cat-badge" [ngClass]="{
-              'cat-grano': product.categoria === 'Granos',
-              'cat-insumo': product.categoria === 'Insumos',
-              'cat-fertilizante': product.categoria === 'Fertilizantes'
-            }">{{ product.categoria === 'Granos' ? '🌽' : product.categoria === 'Insumos' ? '🛢' : product.categoria === 'Fertilizantes' ? '🧪' : '🔧' }} {{ product.categoria }}</span></td>
-            <td><span class="stock-val" [ngClass]="getStockClass(product)">{{ product.stock }}</span></td>
+            <td>
+              <div class="prod-name">{{ product.nombre }}</div>
+              <div class="prod-code">{{ product.detalle }}</div>
+            </td>
+            <td>
+              <span
+                class="cat-badge"
+                [ngClass]="{
+                  'cat-grano': product.categoria === 'Granos',
+                  'cat-insumo': product.categoria === 'Insumos',
+                  'cat-fertilizante': product.categoria === 'Fertilizantes',
+                }"
+                >{{
+                  product.categoria === 'Granos'
+                    ? '🌽'
+                    : product.categoria === 'Insumos'
+                      ? '🛢'
+                      : product.categoria === 'Fertilizantes'
+                        ? '🧪'
+                        : '🔧'
+                }}
+                {{ product.categoria }}</span
+              >
+            </td>
+            <td>
+              <span class="stock-val" [ngClass]="getStockClass(product)">{{ product.stock }}</span>
+            </td>
             <td>{{ product.unidad }}</td>
             <td>{{ product.seccion }}</td>
-            <td><span class="status-dot"><span class="dot" [ngClass]="getStatusDotClass(product)"></span>{{ getStatus(product) }}</span></td>
-            <td><div class="actions"><button class="act-btn" type="button">👁</button><button class="act-btn" type="button" (click)="openEditProduct(product)">✏️</button><button class="act-btn" type="button">📜</button></div></td>
+            <td>
+              <span class="status-dot"
+                ><span class="dot" [ngClass]="getStatusDotClass(product)"></span
+                >{{ getStatus(product) }}</span
+              >
+            </td>
+            <td>
+              <div class="actions">
+                <button class="act-btn" type="button">👁</button
+                ><button class="act-btn" type="button" (click)="openEditProduct(product)">✏️</button
+                ><button class="act-btn" type="button" (click)="deleteProduct(product)">🗑</button>
+              </div>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -86,8 +139,12 @@
   <section class="modal-card" *ngIf="showForm">
     <div class="modal-header">
       <div>
-        <div class="modal-title">{{ editingProductId === null ? 'Nuevo Producto' : 'Editar Producto' }}</div>
-        <div class="modal-subtitle">Los cambios se aplican inmediatamente en la tabla y filtros.</div>
+        <div class="modal-title">
+          {{ editingProductId === null ? 'Nuevo Producto' : 'Editar Producto' }}
+        </div>
+        <div class="modal-subtitle">
+          Los cambios se aplican inmediatamente en la tabla y filtros.
+        </div>
       </div>
       <button class="close-btn" type="button" (click)="closeForm()">✕</button>
     </div>
@@ -108,7 +165,9 @@
       <label class="modal-field">
         <span>Categoria</span>
         <select [(ngModel)]="formModel.categoria">
-          <option *ngFor="let category of categories.slice(1)" [value]="category">{{ category }}</option>
+          <option *ngFor="let category of categories.slice(1)" [value]="category">
+            {{ category }}
+          </option>
         </select>
       </label>
       <label class="modal-field">
@@ -129,7 +188,9 @@
 
     <div class="modal-actions">
       <button class="secondary-btn" type="button" (click)="closeForm()">Cancelar</button>
-      <button class="primary-btn" type="button" (click)="saveProduct()">Guardar cambios</button>
+      <button class="primary-btn" type="button" (click)="saveProduct()" [disabled]="saving">
+        {{ saving ? 'Guardando...' : 'Guardar cambios' }}
+      </button>
     </div>
   </section>
 </app-admin-layout>

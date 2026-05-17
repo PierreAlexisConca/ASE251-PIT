@@ -1,33 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AdminLayoutComponent } from '../../layouts/admin-layout/admin-layout.component';
-
-type Category = 'Granos' | 'Insumos' | 'Fertilizantes' | 'Herramientas';
-type StockStatus = 'Normal' | 'Bajo' | 'Por vencer' | 'Critico';
-
-interface Product {
-  id: number;
-  codigo: string;
-  nombre: string;
-  detalle: string;
-  categoria: Category;
-  stock: number;
-  unidad: string;
-  seccion: string;
-  status?: StockStatus;
-}
-
-interface ProductFormModel {
-  id: number | null;
-  codigo: string;
-  nombre: string;
-  detalle: string;
-  categoria: Category;
-  stock: number;
-  unidad: string;
-  seccion: string;
-}
+import {
+  InventarioService,
+  Product,
+  ProductFormModel,
+  StockStatus,
+} from '../../services/inventario.service';
 
 interface CategoryCounts {
   Todos: number;
@@ -42,9 +22,11 @@ interface CategoryCounts {
   standalone: true,
   imports: [CommonModule, FormsModule, AdminLayoutComponent],
   templateUrl: './inventario-page.component.html',
-  styleUrl: './inventario-page.component.scss'
+  styleUrl: './inventario-page.component.scss',
 })
-export class InventarioPageComponent {
+export class InventarioPageComponent implements OnInit {
+  private readonly inventarioService = inject(InventarioService);
+
   searchTerm = '';
   selectedCategory = 'Todos';
   selectedSection = 'Todas';
@@ -52,23 +34,33 @@ export class InventarioPageComponent {
   activeTab = 'Todos';
   showForm = false;
   editingProductId: number | null = null;
+  loading = false;
+  saving = false;
 
   readonly categories = ['Todos', 'Granos', 'Insumos', 'Fertilizantes', 'Herramientas'];
   readonly sections = ['Todas', 'A-02', 'A-04', 'B-01', 'B-03', 'C-01', 'D-02', 'D-05'];
   readonly statuses = ['Todos', 'Normal', 'Bajo', 'Por vencer', 'Critico'];
 
-  products: Product[] = [
-    { id: 1, codigo: 'GRN-001', nombre: 'Maiz Amarillo Duro', detalle: 'Zea mays · Var. PM-213', categoria: 'Granos', stock: 4800, unidad: 'kg', seccion: 'A-02' },
-    { id: 2, codigo: 'GRN-002', nombre: 'Arroz Corriente', detalle: 'Oryza sativa · Var. IR-64', categoria: 'Granos', stock: 2100, unidad: 'kg', seccion: 'A-04' },
-    { id: 3, codigo: 'FRT-001', nombre: 'Fertilizante NPK 20-20-20', detalle: 'Lote FRT-2024-08', categoria: 'Fertilizantes', stock: 320, unidad: 'kg', seccion: 'B-01' },
-    { id: 4, codigo: 'INS-003', nombre: 'Pesticida Foliar Concentrado', detalle: 'Clorpirifos 48% EC', categoria: 'Insumos', stock: 180, unidad: 'L', seccion: 'B-03' },
-    { id: 5, codigo: 'GRN-007', nombre: 'Semilla de Papa Canchan', detalle: 'Solanum tuberosum · Cert. A', categoria: 'Granos', stock: 45, unidad: 'kg', seccion: 'C-01' },
-    { id: 6, codigo: 'HER-012', nombre: 'Rastrillo de Acero Galvanizado', detalle: '14 dientes · Mango 1.5m', categoria: 'Herramientas', stock: 24, unidad: 'unid.', seccion: 'D-02' },
-    { id: 7, codigo: 'FRT-005', nombre: 'Humus de Lombriz', detalle: 'Organico certificado', categoria: 'Fertilizantes', stock: 95, unidad: 'kg', seccion: 'B-02' },
-    { id: 8, codigo: 'INS-009', nombre: 'Manguera de Riego Tecnificado', detalle: '16mm · Cinta goteo 200m', categoria: 'Insumos', stock: 12, unidad: 'rollo', seccion: 'D-05' }
-  ];
+  products: Product[] = [];
 
   formModel: ProductFormModel = this.emptyForm();
+
+  ngOnInit(): void {
+    this.loadProducts();
+  }
+
+  loadProducts(): void {
+    this.loading = true;
+    this.inventarioService.getAll().subscribe({
+      next: (data) => {
+        this.products = data;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      },
+    });
+  }
 
   get filteredProducts(): Product[] {
     return this.products
@@ -87,7 +79,7 @@ export class InventarioPageComponent {
         counts.Todos += 1;
         return counts;
       },
-      { Todos: 0, Granos: 0, Insumos: 0, Fertilizantes: 0, Herramientas: 0 }
+      { Todos: 0, Granos: 0, Insumos: 0, Fertilizantes: 0, Herramientas: 0 },
     );
   }
 
@@ -107,7 +99,7 @@ export class InventarioPageComponent {
       categoria: product.categoria,
       stock: product.stock,
       unidad: product.unidad,
-      seccion: product.seccion
+      seccion: product.seccion,
     };
     this.showForm = true;
   }
@@ -117,24 +109,43 @@ export class InventarioPageComponent {
   }
 
   saveProduct(): void {
-    const payload: Product = {
-      id: this.editingProductId ?? Date.now(),
-      codigo: this.formModel.codigo.trim(),
-      nombre: this.formModel.nombre.trim(),
-      detalle: this.formModel.detalle.trim(),
-      categoria: this.formModel.categoria,
-      stock: Number(this.formModel.stock),
-      unidad: this.formModel.unidad.trim(),
-      seccion: this.formModel.seccion.trim()
-    };
+    this.saving = true;
 
     if (this.editingProductId === null) {
-      this.products = [payload, ...this.products];
+      this.inventarioService.create(this.formModel).subscribe({
+        next: (created) => {
+          this.products = [created, ...this.products];
+          this.saving = false;
+          this.closeForm();
+        },
+        error: () => {
+          this.saving = false;
+        },
+      });
     } else {
-      this.products = this.products.map((product) => (product.id === this.editingProductId ? payload : product));
+      this.inventarioService.update(this.editingProductId, this.formModel).subscribe({
+        next: (updated) => {
+          this.products = this.products.map((product) =>
+            product.id === this.editingProductId ? updated : product,
+          );
+          this.saving = false;
+          this.closeForm();
+        },
+        error: () => {
+          this.saving = false;
+        },
+      });
     }
+  }
 
-    this.closeForm();
+  deleteProduct(product: Product): void {
+    if (!confirm(`Eliminar "${product.nombre}"?`)) return;
+
+    this.inventarioService.delete(product.id).subscribe({
+      next: () => {
+        this.products = this.products.filter((p) => p.id !== product.id);
+      },
+    });
   }
 
   setTab(tab: string): void {
@@ -185,7 +196,14 @@ export class InventarioPageComponent {
       return true;
     }
 
-    return [product.codigo, product.nombre, product.detalle, product.categoria, product.seccion, product.unidad]
+    return [
+      product.codigo,
+      product.nombre,
+      product.detalle,
+      product.categoria,
+      product.seccion,
+      product.unidad,
+    ]
       .join(' ')
       .toLowerCase()
       .includes(term);
@@ -216,7 +234,7 @@ export class InventarioPageComponent {
       categoria: 'Granos',
       stock: 0,
       unidad: 'kg',
-      seccion: 'A-02'
+      seccion: 'A-02',
     };
   }
 }
