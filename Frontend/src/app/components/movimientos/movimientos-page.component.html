@@ -11,129 +11,137 @@
       </div>
 
       <div class="toggle-group">
-        <button class="toggle-btn entrada active">⬇️ Entrada</button>
-        <button class="toggle-btn salida">⬆️ Salida</button>
+        <button 
+          class="toggle-btn entrada"
+          [class.active]="tipoSeleccionado === 'Entrada'"
+          (click)="cambiarTipo('Entrada')">
+          ⬇️ Entrada
+        </button>
+        <button 
+          class="toggle-btn salida"
+          [class.active]="tipoSeleccionado === 'Salida'"
+          (click)="cambiarTipo('Salida')">
+          ⬆️ Salida
+        </button>
       </div>
 
       <div class="form-body">
-        <div class="field">
-          <label>Producto</label>
-          <select>
-            <option value="" disabled selected>Selecciona un producto...</option>
-            <option>Maiz Amarillo Duro · GRN-001</option>
-            <option>Arroz Corriente · GRN-002</option>
-            <option>Fertilizante NPK 20-20-20 · FRT-001</option>
-            <option>Semilla de Papa Canchan · GRN-007</option>
-          </select>
-          <div class="stock-preview">
-            <span>Stock actual:</span>
-            <strong>4,800 kg disponibles</strong>
-          </div>
-        </div>
-
-        <div class="field-row">
+        <div class="form-section">
           <div class="field">
-            <label>Cantidad</label>
-            <input type="number" placeholder="0" min="1" />
-          </div>
-          <div class="field">
-            <label>Unidad</label>
-            <select>
-              <option>kg</option>
-              <option>L</option>
-              <option>unid.</option>
+            <label>Producto</label>
+            <select [(ngModel)]="nuevoMovimiento.productoId" (change)="onProductoChange()" name="producto">
+              <option value="0" disabled>Selecciona un producto...</option>
+              <option *ngFor="let p of productos" [value]="p.id">{{ p.nombre }} · {{ p.codigo }}</option>
             </select>
+            <div class="stock-preview" *ngIf="stockActual > 0">
+              <span>Stock actual:</span>
+              <strong>{{ stockActual | number }} {{ nuevoMovimiento.unidad }} disponibles</strong>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label>Cantidad</label>
+              <input type="number" [(ngModel)]="nuevoMovimiento.cantidad" placeholder="0" min="1" name="cantidad" />
+            </div>
+            <div class="field">
+              <label>Unidad</label>
+              <select [(ngModel)]="nuevoMovimiento.unidad" name="unidad">
+                <option>kg</option>
+                <option>L</option>
+                <option>unid.</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <div class="field-row">
+        <div class="form-section">
+          <div class="field-row fecha-hora">
+            <div class="field">
+              <label>Fecha</label>
+              <input type="date" [(ngModel)]="nuevoMovimiento.fecha" name="fecha" />
+            </div>
+            <div class="field">
+              <label>Hora</label>
+              <input type="time" name="hora" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
           <div class="field">
-            <label>Fecha</label>
-            <input type="date" value="2026-04-22" />
+            <label>Proveedor / Destino</label>
+            <input type="text" [(ngModel)]="nuevoMovimiento.proveedor" placeholder="ej. Proveedor Sanchez, Parcela N°3..." name="proveedor" />
           </div>
+
           <div class="field">
-            <label>Hora</label>
-            <input type="time" value="09:30" />
+            <label>N° Documento (Guia / Factura)</label>
+            <input type="text" [(ngModel)]="nuevoMovimiento.documento" placeholder="ej. G-2026-00123" name="documento" />
           </div>
         </div>
 
-        <div class="field">
-          <label>Proveedor / Destino</label>
-          <input type="text" placeholder="ej. Proveedor Sanchez, Parcela N°3..." />
+        <div class="form-section">
+          <div class="field">
+            <label>Observaciones</label>
+            <textarea [(ngModel)]="nuevoMovimiento.observaciones" placeholder="Notas adicionales sobre este movimiento..." name="obs"></textarea>
+          </div>
         </div>
 
-        <div class="field">
-          <label>Responsable</label>
-          <select>
-            <option>Juan Mendoza – Administrador</option>
-            <option>Maria Torres – Almacenera</option>
-            <option>Carlos Quispe – Operario</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>N° Documento (Guia / Factura)</label>
-          <input type="text" placeholder="ej. G-2026-00123" />
-        </div>
-
-        <div class="field">
-          <label>Observaciones</label>
-          <textarea placeholder="Notas adicionales sobre este movimiento..."></textarea>
-        </div>
-
-        <button class="btn-submit">✅ Registrar Entrada</button>
+        <button class="btn-submit" (click)="registrarMovimiento()">
+          ✅ Registrar {{ tipoSeleccionado }}
+        </button>
       </div>
     </div>
 
     <div class="hist-card">
       <div class="hist-header">
         <div class="hist-title">Historial de Movimientos</div>
-        <div class="hist-today">Hoy: 8 registros</div>
+        <div class="hist-today">Hoy: {{ movimientosHoy }} registros</div>
       </div>
 
       <div class="filter-row">
-        <button class="f-chip active">Todos</button>
-        <button class="f-chip">Entradas</button>
-        <button class="f-chip">Salidas</button>
+        <button 
+          class="f-chip"
+          [class.active]="filtroActivo === 'todos'"
+          (click)="setFiltro('todos')">
+          Todos
+        </button>
+        <button 
+          class="f-chip"
+          [class.active]="filtroActivo === 'entradas'"
+          (click)="setFiltro('entradas')">
+          Entradas
+        </button>
+        <button 
+          class="f-chip"
+          [class.active]="filtroActivo === 'salidas'"
+          (click)="setFiltro('salidas')">
+          Salidas
+        </button>
       </div>
 
       <div class="mov-list">
-        <div class="mov-item">
-          <div class="mov-type-icon entrada">📥</div>
-          <div class="mov-info">
-            <div class="mov-prod">Maiz Amarillo Duro</div>
-            <div class="mov-meta">GRN-001 · Proveedor Agricola Huanca · G-2026-00288</div>
-          </div>
-          <div class="mov-amount">
-            <div class="mov-qty entrada">+ 2,400 kg</div>
-            <div class="mov-date">Hoy, 08:15</div>
-          </div>
+        <div *ngIf="movimientos.length === 0" class="sin-datos">
+          <p>No hay movimientos registrados</p>
         </div>
 
-        <div class="mov-item">
-          <div class="mov-type-icon salida">📤</div>
+        <div *ngFor="let mov of movimientos" class="mov-item">
+          <div class="mov-type-icon" [class.entrada]="mov.tipo === 'Entrada'" [class.salida]="mov.tipo === 'Salida'">
+            {{ mov.tipo === 'Entrada' ? '📥' : '📤' }}
+          </div>
           <div class="mov-info">
-            <div class="mov-prod">Fertilizante NPK 20-20-20</div>
-            <div class="mov-meta">FRT-001 · Parcela N°5 – Carlos Quispe</div>
+            <div class="mov-prod">{{ getProductoNombre(mov.productoId) }}</div>
+            <div class="mov-meta">{{ getProductoSkuCategoria(mov.productoId) }} · {{ mov.proveedor }}</div>
           </div>
           <div class="mov-amount">
-            <div class="mov-qty salida">– 150 kg</div>
-            <div class="mov-date">Hoy, 07:50</div>
-          </div>
-        </div>
-
-        <div class="mov-item">
-          <div class="mov-type-icon entrada">📥</div>
-          <div class="mov-info">
-            <div class="mov-prod">Semilla de Arroz IR-64</div>
-            <div class="mov-meta">GRN-002 · Proveedor Semillas del Sur</div>
-          </div>
-          <div class="mov-amount">
-            <div class="mov-qty entrada">+ 800 kg</div>
-            <div class="mov-date">Ayer, 15:30</div>
+            <div class="mov-qty" [class.entrada]="mov.tipo === 'Entrada'" [class.salida]="mov.tipo === 'Salida'">
+              {{ formatearCantidad(mov.cantidad, mov.tipo) }} {{ mov.unidad }}
+            </div>
+            <div class="mov-date">{{ formatearFecha(mov.fecha) }}</div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </app-admin-layout>
+
