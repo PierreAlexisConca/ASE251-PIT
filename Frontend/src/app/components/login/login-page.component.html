@@ -29,19 +29,37 @@
       <div class="form-title">Bienvenido</div>
       <div class="form-subtitle">Ingresa tus credenciales para continuar</div>
 
-      <div class="field">
-        <label>Usuario</label>
-        <input type="text" placeholder="ej. admin@agricola.pe" />
-      </div>
+      <form (ngSubmit)="onLogin()">
+        
+        <div class="field">
+          <label for="usuario">Usuario</label>
+          <input 
+            type="text" 
+            id="usuario"
+            name="usuario" 
+            placeholder="ej. admin@agricola.pe" 
+            [(ngModel)]="loginData.usuario" 
+            required />
+        </div>
 
-      <div class="field">
-        <label>Contrasena</label>
-        <input type="password" placeholder="••••••••" />
-      </div>
+        <div class="field">
+          <label for="contrasena">Contraseña</label>
+          <input 
+            type="password" 
+            id="contrasena"
+            name="contrasena" 
+            placeholder="••••••••" 
+            [(ngModel)]="loginData.contrasena" 
+            required />
+        </div>
 
-      <div class="forgot"><a href="javascript:void(0)">¿Olvidaste tu contrasena?</a></div>
+        <div class="forgot">
+          <a href="javascript:void(0)">¿Olvidaste tu contraseña?</a>
+        </div>
 
-      <a class="btn-login" routerLink="/dashboard">Iniciar Sesion</a>
+        <button type="submit" class="btn-login">Iniciar Sesión</button>
+      
+      </form>
 
       <div class="version">v2.4.1 · Modulo Almacen · 2025</div>
     </div>
