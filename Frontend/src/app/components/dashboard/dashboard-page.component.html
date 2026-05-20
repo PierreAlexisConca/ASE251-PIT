@@ -2,27 +2,27 @@
     <div class="kpi-grid">
         <div class="kpi verde">
             <div class="kpi-icon">📦</div>
-            <div class="kpi-value">1,248</div>
+            <div class="kpi-value">{{ resumen()?.totalProductos ?? '-' }}</div>
             <div class="kpi-label">Total Productos</div>
-            <div class="kpi-trend trend-up">↑ 12 nuevos este mes</div>
+            <div class="kpi-trend trend-up">&nbsp;</div>
         </div>
         <div class="kpi dorado">
             <div class="kpi-icon">🌾</div>
-            <div class="kpi-value">84.6 t</div>
-            <div class="kpi-label">Stock Actual</div>
-            <div class="kpi-trend trend-up">↑ 5.3% vs mes anterior</div>
+            <div class="kpi-value">{{ resumen()?.productosPorVencer ?? '-' }}</div>
+            <div class="kpi-label">Por Vencer</div>
+            <div class="kpi-trend trend-up">&nbsp;</div>
         </div>
         <div class="kpi tierra">
             <div class="kpi-icon">🚛</div>
-            <div class="kpi-value">37</div>
-            <div class="kpi-label">Salidas del Mes</div>
-            <div class="kpi-trend trend-down">↓ 3 menos que abril</div>
+            <div class="kpi-value">{{ resumen()?.productosBajoStock ?? '-' }}</div>
+            <div class="kpi-label">Bajo Stock</div>
+            <div class="kpi-trend trend-down">&nbsp;</div>
         </div>
         <div class="kpi rojo">
             <div class="kpi-icon">⚠️</div>
-            <div class="kpi-value">5</div>
-            <div class="kpi-label">Stock Critico</div>
-            <div class="kpi-trend trend-down">Requieren atencion</div>
+            <div class="kpi-value">{{ resumen()?.productosCriticos ?? '-' }}</div>
+            <div class="kpi-label">Stock Crítico</div>
+            <div class="kpi-trend trend-down">Requieren atención</div>
         </div>
     </div>
 

@@ -3,8 +3,8 @@ export interface ProductoFormModel {
   codigo: string;
   nombre: string;
   detalle: string;
-  categoria: string;
+  categoria: number | null;
   stock: number;
   unidad: string;
-  seccion: string;
+  seccion: { id: number; nombre: string } | null;
 }

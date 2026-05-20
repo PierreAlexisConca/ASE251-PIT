@@ -50,4 +50,16 @@ public class Movimiento {
     public void setSeccion(String seccion) { this.seccion = seccion; }
     public String getObservaciones() { return observaciones; }
     public void setObservaciones(String observaciones) { this.observaciones = observaciones; }
+    public String getObservacion() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getObservacion'");
+    }
+    public void setFecha(String fecha2) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setFecha'");
+    }
+    public void setObservacion(String observacion) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setObservacion'");
+    }
 }

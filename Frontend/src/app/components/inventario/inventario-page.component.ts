@@ -73,9 +73,9 @@ export class InventarioPageComponent implements OnInit {
   get categoryCounts(): CategoryCounts {
     return this.products.reduce(
       (counts, product) => {
-        const cat = product.categoria as keyof CategoryCounts;
-        if (cat in counts) {
-          counts[cat] += 1;
+        const catName = product.categoria?.nombre as keyof CategoryCounts;
+        if (catName && catName in counts) {
+          counts[catName] += 1;
         }
         counts.Todos += 1;
         return counts;
@@ -92,16 +92,16 @@ export class InventarioPageComponent implements OnInit {
 
   openEditProduct(product: Producto): void {
     this.editingProductId = product.id;
-    this.formModel = {
-      id: product.id,
-      codigo: product.codigo,
-      nombre: product.nombre,
-      detalle: product.detalle,
-      categoria: product.categoria,
-      stock: product.stock,
-      unidad: product.unidad,
-      seccion: product.seccion,
-    };
+      this.formModel = {
+        id: product.id,
+        codigo: product.codigo,
+        nombre: product.nombre,
+        detalle: product.detalle,
+        categoria: product.categoria?.id ?? null, // Changed to use id
+        stock: product.stock,
+        unidad: product.unidad,
+        seccion: product.seccion,
+      };
     this.showForm = true;
   }
 
@@ -112,26 +112,22 @@ export class InventarioPageComponent implements OnInit {
   saveProduct(): void {
     this.saving = true;
 
+    const onComplete = () => {
+      this.saving = false;
+      this.closeForm();
+      this.loadProducts(); // Refresca la lista desde el backend
+    };
+
     if (this.editingProductId === null) {
       this.inventarioService.create(this.formModel).subscribe({
-        next: (created) => {
-          this.products = [created, ...this.products];
-          this.saving = false;
-          this.closeForm();
-        },
+        next: onComplete,
         error: () => {
           this.saving = false;
         },
       });
     } else {
       this.inventarioService.update(this.editingProductId, this.formModel).subscribe({
-        next: (updated) => {
-          this.products = this.products.map((product) =>
-            product.id === this.editingProductId ? updated : product,
-          );
-          this.saving = false;
-          this.closeForm();
-        },
+        next: onComplete,
         error: () => {
           this.saving = false;
         },
@@ -183,7 +179,7 @@ export class InventarioPageComponent implements OnInit {
   getStatus(product: Producto): StockStatus {
     if (product.stock <= 50) return 'Critico';
     if (product.stock <= 100) return 'Bajo';
-    if (product.categoria === 'Fertilizantes' && product.stock <= 350) return 'Por vencer';
+    if (product.categoria?.nombre === 'Fertilizantes' && product.stock <= 350) return 'Por vencer';
     return 'Normal';
   }
 
@@ -211,11 +207,11 @@ export class InventarioPageComponent implements OnInit {
   }
 
   private matchesCategory(product: Producto): boolean {
-    return this.selectedCategory === 'Todos' || product.categoria === this.selectedCategory;
+    return this.selectedCategory === 'Todos' || product.categoria?.nombre === this.selectedCategory;
   }
 
   private matchesSection(product: Producto): boolean {
-    return this.selectedSection === 'Todas' || product.seccion === this.selectedSection;
+    return this.selectedSection === 'Todas' || product.seccion?.nombre === this.selectedSection;
   }
 
   private matchesStatus(product: Producto): boolean {
@@ -223,7 +219,7 @@ export class InventarioPageComponent implements OnInit {
   }
 
   private matchesTab(product: Producto): boolean {
-    return this.activeTab === 'Todos' || product.categoria === this.activeTab;
+    return this.activeTab === 'Todos' || product.categoria?.nombre === this.activeTab;
   }
 
   private emptyForm(): ProductoFormModel {
@@ -232,10 +228,10 @@ export class InventarioPageComponent implements OnInit {
       codigo: '',
       nombre: '',
       detalle: '',
-      categoria: 'Granos',
+      categoria: null,
       stock: 0,
       unidad: 'kg',
-      seccion: 'A-02',
+      seccion: null,
     };
   }
 }

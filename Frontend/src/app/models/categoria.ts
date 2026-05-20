@@ -1,1 +1,5 @@
-export type Categoria = 'Granos' | 'Insumos' | 'Fertilizantes' | 'Herramientas';
+
+export interface Categoria {
+	id: number;
+	nombre: string;
+}

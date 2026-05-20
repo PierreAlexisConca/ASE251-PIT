@@ -1,21 +1,20 @@
-package backend.PIT.model;
+package backend.PIT.dto;
 
-import jakarta.persistence.*;
+import backend.PIT.dto.CategoriaDTO;
+import backend.PIT.dto.SeccionDTO;
 
-@Entity
-@Table(name = "productos")
-public class Producto {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class ProductoDTO {
     private Long id;
     private String codigo;
     private String nombre;
     private String detalle;
-    private Long categoriaId;
+    private CategoriaDTO categoria;
     private Integer stock;
     private String unidad;
-    private Long seccionId;
+    private SeccionDTO seccion;
     private String status;
+
+    public ProductoDTO() {}
 
     // Getters y setters
     public Long getId() { return id; }
@@ -26,14 +25,14 @@ public class Producto {
     public void setNombre(String nombre) { this.nombre = nombre; }
     public String getDetalle() { return detalle; }
     public void setDetalle(String detalle) { this.detalle = detalle; }
-    public Long getCategoriaId() { return categoriaId; }
-    public void setCategoriaId(Long categoriaId) { this.categoriaId = categoriaId; }
+    public CategoriaDTO getCategoria() { return categoria; }
+    public void setCategoria(CategoriaDTO categoria) { this.categoria = categoria; }
     public Integer getStock() { return stock; }
     public void setStock(Integer stock) { this.stock = stock; }
     public String getUnidad() { return unidad; }
     public void setUnidad(String unidad) { this.unidad = unidad; }
-    public Long getSeccionId() { return seccionId; }
-    public void setSeccionId(Long seccionId) { this.seccionId = seccionId; }
+    public SeccionDTO getSeccion() { return seccion; }
+    public void setSeccion(SeccionDTO seccion) { this.seccion = seccion; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 }

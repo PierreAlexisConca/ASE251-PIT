@@ -116,7 +116,7 @@ export class MovimientosPageComponent implements OnInit {
 
   getProductoSkuCategoria(productoId: number): string {
     const producto = this.productos.find((p: Producto) => p.id === productoId);
-    return producto ? `${producto.codigo} · ${producto.categoria}` : '';
+     return producto ? `${producto.codigo} · ${producto.categoria?.nombre ?? ''}` : '';
   }
 
   formatearCantidad(cantidad: number, tipo: string): string {

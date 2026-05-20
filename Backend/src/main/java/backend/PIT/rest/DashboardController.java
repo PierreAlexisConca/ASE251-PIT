@@ -25,9 +25,9 @@ public class DashboardController {
         List<Producto> productos = productoService.findAll();
         DashboardResumen resumen = new DashboardResumen();
         resumen.setTotalProductos(productos.size());
-        resumen.setProductosBajoStock((int) productos.stream().filter(p -> p.getStatus() != null && p.getStatus().name().equals("BAJO")).count());
-        resumen.setProductosPorVencer((int) productos.stream().filter(p -> p.getStatus() != null && p.getStatus().name().equals("POR_VENCER")).count());
-        resumen.setProductosCriticos((int) productos.stream().filter(p -> p.getStatus() != null && p.getStatus().name().equals("CRITICO")).count());
+        resumen.setProductosBajoStock((int) productos.stream().filter(p -> p.getStatus() != null && p.getStatus().equals("BAJO")).count());
+        resumen.setProductosPorVencer((int) productos.stream().filter(p -> p.getStatus() != null && p.getStatus().equals("POR_VENCER")).count());
+        resumen.setProductosCriticos((int) productos.stream().filter(p -> p.getStatus() != null && p.getStatus().equals("CRITICO")).count());
         return resumen;
     }
 }

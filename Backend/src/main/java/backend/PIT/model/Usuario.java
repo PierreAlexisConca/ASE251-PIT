@@ -1,45 +1,58 @@
-package vallegrande.edu.pe.model;
+
+package backend.PIT.model;
 
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "usuario")
+@Table(name = "usuarios")
 public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_usuario") // Crucial para vincular la PK identity(1,1) de SQL Server
-    private Integer id; // Cambiado a Integer para coincidir con INT de SQL Server
+    private Long id;
 
-    @Column(name = "usuario", length = 100)
-    private String usuario;
+    @Column(name = "username", length = 100, unique = true)
+    private String username;
 
-    @Column(name = "contrasena", length = 100)
-    private String contrasena;
+    @Column(name = "password", length = 255)
+    private String password;
 
-    @Column(name = "estado")
-    private Boolean estado;
+    @Column(name = "nombre", length = 150)
+    private String nombre;
+
+    @Column(name = "rol", length = 50)
+    private String rol;
+
+    @Column(name = "activo")
+    private Boolean activo;
 
     // --- Constructores ---
     public Usuario() {}
 
-    // Constructor para facilidad de registro
-    public Usuario(String usuario, String contrasena, Boolean estado) {
-        this.usuario = usuario;
-        this.contrasena = contrasena;
-        this.estado = estado;
+    public Usuario(String username, String password, String nombre, String rol, Boolean activo) {
+        this.username = username;
+        this.password = password;
+        this.nombre = nombre;
+        this.rol = rol;
+        this.activo = activo;
     }
 
     // --- Getters y Setters ---
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public String getUsuario() { return usuario; }
-    public void setUsuario(String usuario) { this.usuario = usuario; }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
 
-    public String getContrasena() { return contrasena; }
-    public void setContrasena(String contrasena) { this.contrasena = contrasena; }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 
-    public Boolean getEstado() { return estado; }
-    public void setEstado(Boolean estado) { this.estado = estado; }
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
+
+    public String getRol() { return rol; }
+    public void setRol(String rol) { this.rol = rol; }
+
+    public Boolean getActivo() { return activo; }
+    public void setActivo(Boolean activo) { this.activo = activo; }
 }

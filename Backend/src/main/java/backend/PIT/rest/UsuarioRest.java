@@ -1,7 +1,8 @@
-package vallegrande.edu.pe.rest;
+package backend.PIT.rest;
 
-import vallegrande.edu.pe.model.Usuario;
-import vallegrande.edu.pe.repository.UsuarioRepository;
+import backend.PIT.model.Usuario;
+import backend.PIT.dto.UsuarioLoginDTO;
+import backend.PIT.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,67 +13,85 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-// 🟢 CAMBIO DE RUTA BASE: Ahora todos tus endpoints usarán '/api/login' en lugar de almacen
-@RequestMapping("/api/login")
-@CrossOrigin(origins = "*") // Permite la conexión directa con Angular sin bloqueos
-// 🟢 NOMBRE DEL GRUPO EN SWAGGER: Cambia el antiguo 'usuario-rest' por un diseño limpio
-@Tag(name = "login-api", description = "Mantenimiento completo de Usuarios conectado a SQL Server")
+@RequestMapping("/api/usuarios")
+@CrossOrigin(origins = "http://localhost:4200")
+@Tag(name = "usuarios-api", description = "Mantenimiento de Usuarios para PIT")
 public class UsuarioRest {
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private UsuarioService usuarioService;
 
-    // 1. 🔵 GET - LISTAR TODOS LOS USUARIOS
     @GetMapping
-    @Operation(summary = "Listar usuarios", description = "Trae todos los registros guardados en tu SQL Server.")
+    @Operation(summary = "Listar usuarios", description = "Trae todos los usuarios.")
     public ResponseEntity<List<Usuario>> listarTodos() {
-        List<Usuario> lista = usuarioRepository.findAll();
-        return ResponseEntity.ok(lista);
+        return ResponseEntity.ok(usuarioService.findAll());
     }
 
-    // 2. 🟢 POST - CREAR / REGISTRAR NUEVO USUARIO (Acepta cualquier dato)
     @PostMapping
-    @Operation(summary = "Registrar nuevo usuario", description = "Guarda un usuario con cualquier letra, número o contraseña directo en la BD.")
+    @Operation(summary = "Registrar nuevo usuario", description = "Guarda un usuario en la BD.")
     public ResponseEntity<Usuario> registrar(@RequestBody Usuario usuario) {
-        if (usuario.getEstado() == null) {
-            usuario.setEstado(true); // Por defecto lo guarda como activo (1)
+        if (usuario.getActivo() == null) {
+            usuario.setActivo(true);
         }
-        Usuario guardado = usuarioRepository.save(usuario);
+        Usuario guardado = usuarioService.save(usuario);
         return ResponseEntity.ok(guardado);
     }
 
-    // 3. 🟠 PUT - MODIFICAR UN USUARIO EXISTENTE
+    @PostMapping("/login")
+    @Operation(summary = "Login de usuario", description = "Valida usuario y contraseña.")
+    public ResponseEntity<Usuario> login(@RequestBody UsuarioLoginDTO loginDTO) {
+        System.out.println("[LOGIN] username recibido: '" + loginDTO.getUsername() + "'");
+        System.out.println("[LOGIN] password recibido: '" + loginDTO.getPassword() + "'");
+        Optional<Usuario> encontrado = usuarioService.validarLogin(loginDTO.getUsername(), loginDTO.getPassword());
+        if (encontrado.isPresent()) {
+            System.out.println("[LOGIN] Usuario autenticado correctamente: " + loginDTO.getUsername());
+        } else {
+            System.out.println("[LOGIN] Fallo de autenticación para: " + loginDTO.getUsername());
+        }
+        return encontrado.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(401).build());
+    }
+
     @PutMapping("/{id}")
-    @Operation(summary = "Actualizar usuario por ID", description = "Modifica los datos de un usuario existente en SQL Server.")
-    public ResponseEntity<?> actualizar(@PathVariable Integer id, @RequestBody Usuario datosNuevos) {
-        return usuarioRepository.findById(id).map(usuario -> {
-            usuario.setUsuario(datosNuevos.getUsuario());
-            usuario.setContrasena(datosNuevos.getContrasena());
-            usuario.setEstado(datosNuevos.getEstado());
-            Usuario actualizado = usuarioRepository.save(usuario);
+    @Operation(summary = "Actualizar usuario por ID", description = "Modifica los datos de un usuario existente.")
+    public ResponseEntity<?> actualizar(@PathVariable Long id, @RequestBody Usuario datosNuevos) {
+        return usuarioService.findById(id).map(usuario -> {
+            usuario.setUsername(datosNuevos.getUsername());
+            usuario.setPassword(datosNuevos.getPassword());
+            usuario.setNombre(datosNuevos.getNombre());
+            usuario.setRol(datosNuevos.getRol());
+            usuario.setActivo(datosNuevos.getActivo());
+            Usuario actualizado = usuarioService.save(usuario);
             return ResponseEntity.ok(actualizado);
         }).orElse(ResponseEntity.notFound().build());
     }
 
-    // 4. 🟢 PATCH - RESTAURAR (ACTIVAR ESTADO = 1)
     @PatchMapping("/restaurar/{id}")
     @Operation(summary = "Restaurar usuario", description = "Cambia el estado del usuario a activo (1) en tu base de datos.")
-    public ResponseEntity<?> restaurar(@PathVariable Integer id) {
-        return usuarioRepository.findById(id).map(usuario -> {
-            usuario.setEstado(true); // Activa el campo BIT a 1
-            usuarioRepository.save(usuario);
-            return ResponseEntity.ok(usuario);
+    public ResponseEntity<?> restaurar(@PathVariable Long id) {
+        return usuarioService.findById(id).map(usuario -> {
+            usuario.setActivo(true);
+            Usuario actualizado = usuarioService.save(usuario);
+            return ResponseEntity.ok(actualizado);
         }).orElse(ResponseEntity.notFound().build());
     }
 
-    // 5. 🟢 PATCH - ELIMINAR LÓGICO (DESACTIVAR ESTADO = 0)
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Eliminar usuario", description = "Elimina un usuario por ID.")
+    public ResponseEntity<?> eliminar(@PathVariable Long id) {
+        usuarioService.deleteById(id);
+        return ResponseEntity.ok().build();
+    }
+
+
+    // PATCH lógico para desactivar usuario (activo = false)
     @PatchMapping("/eliminar/{id}")
-    @Operation(summary = "Eliminar usuario (Lógico)", description = "Desactiva al usuario cambiando su estado a 0.")
-    public ResponseEntity<?> eliminar(@PathVariable Integer id) {
-        return usuarioRepository.findById(id).map(usuario -> {
-            usuario.setEstado(false); // Cambia el campo BIT a 0
-            usuarioRepository.save(usuario);
-            return ResponseEntity.ok(usuario);
+    @Operation(summary = "Eliminar usuario (Lógico)", description = "Desactiva al usuario cambiando su campo 'activo' a false.")
+    public ResponseEntity<?> eliminarLogico(@PathVariable Long id) {
+        return usuarioService.findById(id).map(usuario -> {
+            usuario.setActivo(false);
+            Usuario actualizado = usuarioService.save(usuario);
+            return ResponseEntity.ok(actualizado);
         }).orElse(ResponseEntity.notFound().build());
     }
+
 }

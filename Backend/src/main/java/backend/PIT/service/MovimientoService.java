@@ -38,4 +38,20 @@ public class MovimientoService {
     public List<Object[]> distributionByCategory(LocalDateTime from, LocalDateTime to) {
         return movimientoRepository.distributionByCategory(from, to);
     }
+
+    public List<Movimiento> findAll() {
+        return movimientoRepository.findAll();
+    }
+
+    public java.util.Optional<Movimiento> findById(Long id) {
+        return movimientoRepository.findById(id);
+    }
+
+    public Movimiento save(Movimiento movimiento) {
+        return movimientoRepository.save(movimiento);
+    }
+
+    public void deleteById(Long id) {
+        movimientoRepository.deleteById(id);
+    }
 }

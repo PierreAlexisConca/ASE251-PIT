@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { Producto } from '../models/producto';
 import { ProductoFormModel } from '../models/producto-form.model';
 import { Categoria } from '../models/categoria';
@@ -10,7 +11,7 @@ import { StockStatus } from '../models/stock-status';
 @Injectable({ providedIn: 'root' })
 export class InventarioService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:3000/api/productos';
+  private readonly apiUrl = environment.apiUrl + '/api/productos';
 
   getAll(): Observable<Producto[]> {
     return this.http.get<Producto[]>(this.apiUrl);

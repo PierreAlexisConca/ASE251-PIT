@@ -1,34 +1,46 @@
-package vallegrande.edu.pe.service;
 
-import vallegrande.edu.pe.model.Usuario;
-import vallegrande.edu.pe.repository.UsuarioRepository;
+    package backend.PIT.service;
+
+import backend.PIT.model.Usuario;
+import backend.PIT.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.Optional;
 
 @Service
 public class UsuarioService {
 
+    public java.util.List<Usuario> findAll() {
+        return usuarioRepository.findAll();
+    }
+
     @Autowired
     private UsuarioRepository usuarioRepository;
 
     /**
-     * ¡Registro Libre! Recibe cualquier dato, lo guarda dinámicamente en SQL Server
-     * y siempre devuelve éxito total.
+     * Valida usuario y contraseña. Devuelve el usuario si existe y está activo.
      */
-    public Optional<Usuario> validarLogin(String usuario, String contrasena) {
-        if (usuario == null || contrasena == null || usuario.isEmpty()) {
+    public Optional<Usuario> validarLogin(String username, String password) {
+        if (username == null || password == null || username.isEmpty()) {
             return Optional.empty();
         }
+        return usuarioRepository.findByUsernameAndPasswordAndActivoTrue(username.trim(), password.trim());
+    }
 
-        // Creamos una nueva entidad en el aire con los datos recibidos (texto o números)
-        // Por defecto, lo activamos (estado=true)
-        Usuario nuevoUsuario = new Usuario(usuario.trim(), contrasena.trim(), true);
+    public Optional<Usuario> findByUsername(String username) {
+        return usuarioRepository.findByUsername(username);
+    }
 
-        // 🟢 ESTO ENVÍA LOS DATOS DIRECTO A TU SQL SERVER MANAGEMENT STUDIO
-        Usuario usuarioGuardado = usuarioRepository.save(nuevoUsuario);
+    public Usuario save(Usuario usuario) {
+        return usuarioRepository.save(usuario);
+    }
 
-        // Devolvemos el usuario ya guardado para confirmar éxito
-        return Optional.of(usuarioGuardado);
+    public Optional<Usuario> findById(Long id) {
+        return usuarioRepository.findById(id);
+    }
+
+    public void deleteById(Long id) {
+        usuarioRepository.deleteById(id);
     }
 }

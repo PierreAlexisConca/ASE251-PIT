@@ -1,11 +1,13 @@
+import { Categoria } from './categoria';
+
 export interface Producto {
   id: number;
   codigo: string;
   nombre: string;
   detalle: string;
-  categoria: string;
+  categoria: { id: number; nombre: string } | null;
   stock: number;
   unidad: string;
-  seccion: string;
+  seccion: { id: number; nombre: string } | null;
   status?: string;
 }

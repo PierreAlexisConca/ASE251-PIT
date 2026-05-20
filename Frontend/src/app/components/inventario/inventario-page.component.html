@@ -86,31 +86,31 @@
               <span
                 class="cat-badge"
                 [ngClass]="{
-                  'cat-grano': product.categoria === 'Granos',
-                  'cat-insumo': product.categoria === 'Insumos',
-                  'cat-fertilizante': product.categoria === 'Fertilizantes',
+                  'cat-grano': product.categoria?.nombre === 'Granos',
+                  'cat-insumo': product.categoria?.nombre === 'Insumos',
+                  'cat-fertilizante': product.categoria?.nombre === 'Fertilizantes',
                 }"
                 >{{
-                  product.categoria === 'Granos'
+                  product.categoria?.nombre === 'Granos'
                     ? '🌽'
-                    : product.categoria === 'Insumos'
+                    : product.categoria?.nombre === 'Insumos'
                       ? '🛢'
-                      : product.categoria === 'Fertilizantes'
+                      : product.categoria?.nombre === 'Fertilizantes'
                         ? '🧪'
                         : '🔧'
                 }}
-                {{ product.categoria }}</span
+                {{ product.categoria?.nombre || '-' }}</span
               >
             </td>
             <td>
               <span class="stock-val" [ngClass]="getStockClass(product)">{{ product.stock }}</span>
             </td>
-            <td>{{ product.unidad }}</td>
-            <td>{{ product.seccion }}</td>
+            <td>{{ product.unidad || '-' }}</td>
+            <td>{{ product.seccion?.nombre || '-' }}</td>
             <td>
               <span class="status-dot"
                 ><span class="dot" [ngClass]="getStatusDotClass(product)"></span
-                >{{ getStatus(product) }}</span
+                >{{ product.status || '-' }}</span
               >
             </td>
             <td>
