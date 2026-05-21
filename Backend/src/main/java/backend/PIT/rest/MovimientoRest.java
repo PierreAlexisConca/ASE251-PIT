@@ -82,7 +82,8 @@ public class MovimientoRest {
             dto.setProductoNombre(prod.map(Producto::getNombre).orElse(null));
         }
         dto.setCantidad(movimiento.getCantidad());
-        dto.setFecha(movimiento.getFecha());
+        // Convertir LocalDateTime a String si no es null
+        dto.setFecha(movimiento.getFecha() != null ? movimiento.getFecha().toString() : null);
         dto.setObservacion(movimiento.getObservacion());
         return dto;
     }

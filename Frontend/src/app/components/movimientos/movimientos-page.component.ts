@@ -20,6 +20,7 @@ export class MovimientosPageComponent implements OnInit {
   productos: Producto[] = [];
   tipoSeleccionado: 'Entrada' | 'Salida' = 'Entrada';
   filtroActivo: string = 'todos';
+  errorMovimientos: string | null = null;
   
   nuevoMovimiento: Movimiento = {
     productoId: 0,
@@ -46,10 +47,18 @@ export class MovimientosPageComponent implements OnInit {
   }
 
   cargarMovimientos() {
+    this.errorMovimientos = null;
     this.movimientosService.getToday().subscribe({
       next: (data: Movimiento[]) => {
         this.movimientos = [...data];
         this.movimientosOriginales = [...data];
+      },
+      error: (err) => {
+        this.movimientos = [];
+        this.movimientosOriginales = [];
+        this.errorMovimientos = 'No se pudieron cargar los movimientos. Intenta más tarde.';
+        // Opcional: puedes loguear el error en consola para depuración
+        console.error('Error al cargar movimientos:', err);
       }
     });
   }

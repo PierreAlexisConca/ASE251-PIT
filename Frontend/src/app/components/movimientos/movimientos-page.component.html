@@ -4,6 +4,9 @@
   active="movimientos"
 >
   <div class="content-grid">
+    <div *ngIf="errorMovimientos" class="error-message">
+      {{ errorMovimientos }}
+    </div>
     <div class="form-card">
       <div class="form-card-header">
         <div class="form-card-title">Nuevo Movimiento</div>
