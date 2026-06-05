@@ -1,18 +1,23 @@
 package backend.PIT.service;
 
 import backend.PIT.model.Movimiento;
+import backend.PIT.model.Producto;
 import backend.PIT.repository.MovimientoRepository;
+import backend.PIT.repository.ProductoRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MovimientoService {
     private final MovimientoRepository movimientoRepository;
+    private final ProductoRepository productoRepository;
 
-    public MovimientoService(MovimientoRepository movimientoRepository) {
+    public MovimientoService(MovimientoRepository movimientoRepository, ProductoRepository productoRepository) {
         this.movimientoRepository = movimientoRepository;
+        this.productoRepository = productoRepository;
     }
 
     public Long sumEntradasBetween(LocalDateTime from, LocalDateTime to) {
@@ -48,10 +53,75 @@ public class MovimientoService {
     }
 
     public Movimiento save(Movimiento movimiento) {
+        normalizeMovimiento(movimiento);
+
+        Optional<Movimiento> anterior = movimiento.getId() != null
+            ? movimientoRepository.findById(movimiento.getId())
+            : Optional.empty();
+
+        anterior.ifPresent(this::revertStockEffect);
+        applyStockEffect(movimiento);
+
         return movimientoRepository.save(movimiento);
     }
 
     public void deleteById(Long id) {
+        movimientoRepository.findById(id).ifPresent(this::revertStockEffect);
         movimientoRepository.deleteById(id);
+    }
+
+    private void normalizeMovimiento(Movimiento movimiento) {
+        if (movimiento.getFecha() == null) {
+            movimiento.setFecha(LocalDateTime.now());
+        }
+
+        if (movimiento.getTipo() == null) {
+            throw new IllegalArgumentException("El tipo de movimiento es obligatorio");
+        }
+
+        String tipoNormalizado = movimiento.getTipo().trim();
+        if (tipoNormalizado.equalsIgnoreCase("entrada")) {
+            movimiento.setTipo("Entrada");
+            return;
+        }
+        if (tipoNormalizado.equalsIgnoreCase("salida")) {
+            movimiento.setTipo("Salida");
+            return;
+        }
+
+        throw new IllegalArgumentException("Tipo de movimiento no valido");
+    }
+
+    private void applyStockEffect(Movimiento movimiento) {
+        if (movimiento.getProductoId() == null || movimiento.getCantidad() == null) {
+            throw new IllegalArgumentException("Producto y cantidad son obligatorios");
+        }
+
+        Producto producto = productoRepository.findById(movimiento.getProductoId())
+            .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
+
+        int stockActual = producto.getStock() != null ? producto.getStock() : 0;
+        int ajuste = movimiento.getTipo().equals("Entrada") ? movimiento.getCantidad() : -movimiento.getCantidad();
+        int nuevoStock = stockActual + ajuste;
+
+        if (nuevoStock < 0) {
+            throw new IllegalArgumentException("Stock insuficiente para registrar la salida");
+        }
+
+        producto.setStock(nuevoStock);
+        productoRepository.save(producto);
+    }
+
+    private void revertStockEffect(Movimiento movimiento) {
+        if (movimiento.getProductoId() == null || movimiento.getCantidad() == null || movimiento.getTipo() == null) {
+            return;
+        }
+
+        productoRepository.findById(movimiento.getProductoId()).ifPresent(producto -> {
+            int stockActual = producto.getStock() != null ? producto.getStock() : 0;
+            int ajuste = movimiento.getTipo().equalsIgnoreCase("Entrada") ? -movimiento.getCantidad() : movimiento.getCantidad();
+            producto.setStock(Math.max(stockActual + ajuste, 0));
+            productoRepository.save(producto);
+        });
     }
 }

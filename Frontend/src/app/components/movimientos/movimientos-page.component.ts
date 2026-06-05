@@ -21,6 +21,7 @@ export class MovimientosPageComponent implements OnInit {
   tipoSeleccionado: 'Entrada' | 'Salida' = 'Entrada';
   filtroActivo: string = 'todos';
   errorMovimientos: string | null = null;
+  horaSeleccionada = new Date().toISOString().slice(11, 16);
   
   nuevoMovimiento: Movimiento = {
     productoId: 0,
@@ -83,9 +84,15 @@ export class MovimientosPageComponent implements OnInit {
 
   registrarMovimiento() {
     if (this.nuevoMovimiento.productoId && this.nuevoMovimiento.cantidad) {
-      this.movimientosService.create(this.nuevoMovimiento).subscribe({
+      const payload: Movimiento = {
+        ...this.nuevoMovimiento,
+        fecha: `${this.nuevoMovimiento.fecha}T${this.horaSeleccionada}:00`,
+      };
+
+      this.movimientosService.create(payload).subscribe({
         next: () => {
           this.cargarMovimientos();
+          this.cargarProductos();
           this.resetearFormulario();
         }
       });
@@ -104,6 +111,7 @@ export class MovimientosPageComponent implements OnInit {
       unidad: 'kg',
       observaciones: ''
     };
+    this.horaSeleccionada = new Date().toISOString().slice(11, 16);
     this.stockActual = 0;
   }
 
@@ -113,9 +121,9 @@ export class MovimientosPageComponent implements OnInit {
     if (filtro === 'todos') {
       this.movimientos = [...this.movimientosOriginales];
     } else if (filtro === 'entradas') {
-      this.movimientos = this.movimientosOriginales.filter((m: Movimiento) => m.tipo === 'Entrada');
+      this.movimientos = this.movimientosOriginales.filter((m: Movimiento) => m.tipo.toLowerCase() === 'entrada');
     } else if (filtro === 'salidas') {
-      this.movimientos = this.movimientosOriginales.filter((m: Movimiento) => m.tipo === 'Salida');
+      this.movimientos = this.movimientosOriginales.filter((m: Movimiento) => m.tipo.toLowerCase() === 'salida');
     }
   }
 
@@ -129,7 +137,7 @@ export class MovimientosPageComponent implements OnInit {
   }
 
   formatearCantidad(cantidad: number, tipo: string): string {
-    const signo = tipo === 'Entrada' ? '+ ' : '– ';
+    const signo = tipo.toLowerCase() === 'entrada' ? '+ ' : '– ';
     return `${signo}${cantidad.toLocaleString()}`;
   }
 

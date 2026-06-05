@@ -15,10 +15,10 @@
       />
     </div>
     <select class="filter-btn" [(ngModel)]="selectedCategory">
-      <option *ngFor="let category of categories" [value]="category">🏷️ {{ category }}</option>
+      <option *ngFor="let category of categoryFilterOptions" [value]="category">🏷️ {{ category }}</option>
     </select>
     <select class="filter-btn" [(ngModel)]="selectedSection">
-      <option *ngFor="let section of sections" [value]="section">📍 {{ section }}</option>
+      <option *ngFor="let section of sectionFilterOptions" [value]="section">📍 {{ section }}</option>
     </select>
     <select class="filter-btn" [(ngModel)]="selectedStatus">
       <option *ngFor="let status of statuses" [value]="status">⚠️ {{ status }}</option>
@@ -58,7 +58,9 @@
       <div class="table-info">
         Mostrando {{ filteredProducts.length }} de {{ products.length }} productos
       </div>
-      <button class="filter-btn sort-btn">↕ Ordenar por: Stock</button>
+      <button class="filter-btn sort-btn" type="button" (click)="toggleSortByStock()">
+        ↕ Ordenar por: Stock {{ sortDirection === 'desc' ? '↓' : '↑' }}
+      </button>
     </div>
 
     <div class="table-scroll">
@@ -110,12 +112,12 @@
             <td>
               <span class="status-dot"
                 ><span class="dot" [ngClass]="getStatusDotClass(product)"></span
-                >{{ product.status || '-' }}</span
+                >{{ getStatus(product) }}</span
               >
             </td>
             <td>
               <div class="actions">
-                <button class="act-btn" type="button">👁</button
+                <button class="act-btn" type="button" (click)="viewProduct(product)">👁</button
                 ><button class="act-btn" type="button" (click)="openEditProduct(product)">✏️</button
                 ><button class="act-btn" type="button" (click)="deleteProduct(product)">🗑</button>
               </div>
@@ -165,8 +167,9 @@
       <label class="modal-field">
         <span>Categoria</span>
         <select [(ngModel)]="formModel.categoria">
-          <option *ngFor="let category of categories.slice(1)" [value]="category">
-            {{ category }}
+          <option [ngValue]="null" disabled>Selecciona una categoria</option>
+          <option *ngFor="let category of categories" [ngValue]="category">
+            {{ category.nombre }}
           </option>
         </select>
       </label>
@@ -181,7 +184,8 @@
       <label class="modal-field">
         <span>Seccion</span>
         <select [(ngModel)]="formModel.seccion">
-          <option *ngFor="let section of sections.slice(1)" [value]="section">{{ section }}</option>
+          <option [ngValue]="null" disabled>Selecciona una seccion</option>
+          <option *ngFor="let section of sections" [ngValue]="section">{{ section.nombre }}</option>
         </select>
       </label>
     </div>

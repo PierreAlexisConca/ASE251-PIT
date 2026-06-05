@@ -3,7 +3,7 @@ package backend.PIT.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "categoria")
+@Table(name = "categorias")
 public class Categoria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

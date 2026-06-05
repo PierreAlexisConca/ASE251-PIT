@@ -77,14 +77,18 @@ public class MovimientoRest {
         dto.setId(movimiento.getId());
         dto.setTipo(movimiento.getTipo());
         dto.setProductoId(movimiento.getProductoId());
+        dto.setUsuarioId(movimiento.getUsuarioId());
         if (movimiento.getProductoId() != null) {
             Optional<Producto> prod = productoRepository.findById(movimiento.getProductoId());
             dto.setProductoNombre(prod.map(Producto::getNombre).orElse(null));
         }
         dto.setCantidad(movimiento.getCantidad());
-        // Convertir LocalDateTime a String si no es null
         dto.setFecha(movimiento.getFecha() != null ? movimiento.getFecha().toString() : null);
         dto.setObservacion(movimiento.getObservacion());
+        dto.setProveedor(movimiento.getProveedor());
+        dto.setDocumento(movimiento.getDocumento());
+        dto.setUnidad(movimiento.getUnidad());
+        dto.setSeccion(movimiento.getSeccion());
         return dto;
     }
 
@@ -93,9 +97,14 @@ public class MovimientoRest {
         movimiento.setId(dto.getId());
         movimiento.setTipo(dto.getTipo());
         movimiento.setProductoId(dto.getProductoId());
+        movimiento.setUsuarioId(dto.getUsuarioId());
         movimiento.setCantidad(dto.getCantidad());
         movimiento.setFecha(dto.getFecha());
         movimiento.setObservacion(dto.getObservacion());
+        movimiento.setProveedor(dto.getProveedor());
+        movimiento.setDocumento(dto.getDocumento());
+        movimiento.setUnidad(dto.getUnidad());
+        movimiento.setSeccion(dto.getSeccion());
         return movimiento;
     }
 }

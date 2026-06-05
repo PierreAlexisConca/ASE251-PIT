@@ -83,17 +83,8 @@ public class LoteRest {
             dto.setProductoNombre(prod.map(Producto::getNombre).orElse(null));
         }
         dto.setCantidad(lote.getCantidad());
-        // Convertir LocalDate a String si no es null
         dto.setFechaIngreso(lote.getFechaIngreso() != null ? lote.getFechaIngreso().toString() : null);
-        // Si getFechaVencimiento retorna LocalDate, convertir, si retorna String, dejar igual
-        Object fechaVenc = lote.getFechaVencimiento();
-        if (fechaVenc instanceof java.time.LocalDate) {
-            dto.setFechaVencimiento(fechaVenc != null ? ((java.time.LocalDate)fechaVenc).toString() : null);
-        } else if (fechaVenc instanceof String) {
-            dto.setFechaVencimiento((String)fechaVenc);
-        } else {
-            dto.setFechaVencimiento(null);
-        }
+        dto.setFechaVencimiento(lote.getFechaVencimiento() != null ? lote.getFechaVencimiento().toString() : null);
         dto.setEstado(lote.getEstado());
         return dto;
     }

@@ -1,11 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { AdminLayoutComponent } from '../admin-layout/admin-layout.component';
 import { InventarioService } from '../../services/inventario.service';
 import { Producto } from '../../models/producto';
 import { ProductoFormModel } from '../../models/producto-form.model';
 import { StockStatus } from '../../models/stock-status';
+import { Categoria } from '../../models/categoria';
+import { Seccion } from '../../models/seccion';
 
 interface CategoryCounts {
   Todos: number;
@@ -34,17 +37,45 @@ export class InventarioPageComponent implements OnInit {
   editingProductId: number | null = null;
   loading = false;
   saving = false;
+  sortDirection: 'asc' | 'desc' = 'desc';
 
-  readonly categories = ['Todos', 'Granos', 'Insumos', 'Fertilizantes', 'Herramientas'];
-  readonly sections = ['Todas', 'A-02', 'A-04', 'B-01', 'B-03', 'C-01', 'D-02', 'D-05'];
   readonly statuses = ['Todos', 'Normal', 'Bajo', 'Por vencer', 'Critico'];
+  categories: Categoria[] = [];
+  sections: Seccion[] = [];
 
   products: Producto[] = [];
 
   formModel: ProductoFormModel = this.emptyForm();
 
   ngOnInit(): void {
-    this.loadProducts();
+    this.loadCatalogs();
+  }
+
+  get categoryFilterOptions(): string[] {
+    return ['Todos', ...this.categories.map((category) => category.nombre)];
+  }
+
+  get sectionFilterOptions(): string[] {
+    return ['Todas', ...this.sections.map((section) => section.nombre)];
+  }
+
+  loadCatalogs(): void {
+    this.loading = true;
+    forkJoin({
+      categories: this.inventarioService.getCategorias(),
+      sections: this.inventarioService.getSecciones(),
+      products: this.inventarioService.getAll(),
+    }).subscribe({
+      next: ({ categories, sections, products }) => {
+        this.categories = categories;
+        this.sections = sections;
+        this.products = products;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      },
+    });
   }
 
   loadProducts(): void {
@@ -61,13 +92,17 @@ export class InventarioPageComponent implements OnInit {
   }
 
   get filteredProducts(): Producto[] {
-    return this.products
+    const filtered = this.products
       .map((product) => ({ ...product, status: this.getStatus(product) }))
       .filter((product) => this.matchesSearch(product))
       .filter((product) => this.matchesCategory(product))
       .filter((product) => this.matchesSection(product))
       .filter((product) => this.matchesStatus(product))
       .filter((product) => this.matchesTab(product));
+
+    return filtered.sort((a, b) =>
+      this.sortDirection === 'desc' ? b.stock - a.stock : a.stock - b.stock,
+    );
   }
 
   get categoryCounts(): CategoryCounts {
@@ -92,16 +127,16 @@ export class InventarioPageComponent implements OnInit {
 
   openEditProduct(product: Producto): void {
     this.editingProductId = product.id;
-      this.formModel = {
-        id: product.id,
-        codigo: product.codigo,
-        nombre: product.nombre,
-        detalle: product.detalle,
-        categoria: product.categoria?.id ?? null, // Changed to use id
-        stock: product.stock,
-        unidad: product.unidad,
-        seccion: product.seccion,
-      };
+    this.formModel = {
+      id: product.id,
+      codigo: product.codigo,
+      nombre: product.nombre,
+      detalle: product.detalle,
+      categoria: product.categoria,
+      stock: product.stock,
+      unidad: product.unidad,
+      seccion: product.seccion,
+    };
     this.showForm = true;
   }
 
@@ -110,6 +145,10 @@ export class InventarioPageComponent implements OnInit {
   }
 
   saveProduct(): void {
+    if (!this.formModel.categoria || !this.formModel.seccion) {
+      return;
+    }
+
     this.saving = true;
 
     const onComplete = () => {
@@ -135,6 +174,19 @@ export class InventarioPageComponent implements OnInit {
     }
   }
 
+  viewProduct(product: Producto): void {
+    alert(
+      [
+        `Producto: ${product.nombre}`,
+        `Codigo: ${product.codigo}`,
+        `Categoria: ${product.categoria?.nombre ?? '-'}`,
+        `Seccion: ${product.seccion?.nombre ?? '-'}`,
+        `Stock: ${product.stock} ${product.unidad}`,
+        `Detalle: ${product.detalle || '-'}`,
+      ].join('\n'),
+    );
+  }
+
   deleteProduct(product: Producto): void {
     if (!confirm(`Eliminar "${product.nombre}"?`)) return;
 
@@ -156,6 +208,10 @@ export class InventarioPageComponent implements OnInit {
     this.selectedSection = 'Todas';
     this.selectedStatus = 'Todos';
     this.activeTab = 'Todos';
+  }
+
+  toggleSortByStock(): void {
+    this.sortDirection = this.sortDirection === 'desc' ? 'asc' : 'desc';
   }
 
   getStockClass(product: Producto): string {
@@ -197,8 +253,8 @@ export class InventarioPageComponent implements OnInit {
       product.codigo,
       product.nombre,
       product.detalle,
-      product.categoria,
-      product.seccion,
+      product.categoria?.nombre ?? '',
+      product.seccion?.nombre ?? '',
       product.unidad,
     ]
       .join(' ')

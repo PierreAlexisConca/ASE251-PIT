@@ -72,6 +72,7 @@ public class SeccionRest {
         SeccionDTO dto = new SeccionDTO();
         dto.setId(seccion.getId());
         dto.setNombre(seccion.getNombre());
+        dto.setCapacidad(seccion.getCapacidad());
         return dto;
     }
 
@@ -79,6 +80,7 @@ public class SeccionRest {
         Seccion seccion = new Seccion();
         seccion.setId(dto.getId());
         seccion.setNombre(dto.getNombre());
+        seccion.setCapacidad(dto.getCapacidad());
         return seccion;
     }
 }

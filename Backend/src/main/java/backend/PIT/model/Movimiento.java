@@ -38,6 +38,10 @@ public class Movimiento {
     public void setCantidad(Integer cantidad) { this.cantidad = cantidad; }
     public LocalDateTime getFecha() { return fecha; }
     public void setFecha(LocalDateTime fecha) { this.fecha = fecha; }
+    public void setFecha(String fecha) {
+        this.fecha = (fecha != null && !fecha.isEmpty())
+            ? LocalDateTime.parse(fecha.length() == 10 ? fecha + "T00:00:00" : fecha) : null;
+    }
     public String getNota() { return nota; }
     public void setNota(String nota) { this.nota = nota; }
     public String getProveedor() { return proveedor; }
@@ -50,16 +54,8 @@ public class Movimiento {
     public void setSeccion(String seccion) { this.seccion = seccion; }
     public String getObservaciones() { return observaciones; }
     public void setObservaciones(String observaciones) { this.observaciones = observaciones; }
-    public String getObservacion() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getObservacion'");
-    }
-    public void setFecha(String fecha2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setFecha'");
-    }
-    public void setObservacion(String observacion) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setObservacion'");
-    }
+
+    /** Alias para compatibilidad con MovimientoDTO que usa 'observacion' (sin 's') */
+    public String getObservacion() { return observaciones; }
+    public void setObservacion(String observacion) { this.observaciones = observacion; }
 }

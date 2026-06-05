@@ -10,6 +10,7 @@ public class Seccion {
     private Long id;
     private String nombre;
     private String descripcion;
+    private Double capacidad;
 
     // Getters y setters
     public Long getId() { return id; }
@@ -18,4 +19,6 @@ public class Seccion {
     public void setNombre(String nombre) { this.nombre = nombre; }
     public String getDescripcion() { return descripcion; }
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public Double getCapacidad() { return capacidad; }
+    public void setCapacidad(Double capacidad) { this.capacidad = capacidad; }
 }

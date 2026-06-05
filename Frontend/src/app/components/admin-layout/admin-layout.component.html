@@ -27,17 +27,17 @@
     </a>
 
     <div class="nav-section">Configuracion</div>
-    <a class="nav-item" href="javascript:void(0)"><span class="icon">👥</span> Usuarios</a>
-    <a class="nav-item" href="javascript:void(0)"><span class="icon">⚙️</span> Configuracion</a>
-    <a class="nav-item" routerLink="/login"><span class="icon">🚪</span> Cerrar Sesion</a>
+    <a class="nav-item" routerLink="/reportes"><span class="icon">👥</span> Usuarios</a>
+    <a class="nav-item" routerLink="/inventario"><span class="icon">⚙️</span> Configuracion</a>
+    <button class="nav-item" type="button" (click)="logout()"><span class="icon">🚪</span> Cerrar Sesion</button>
   </nav>
 
   <div class="sidebar-footer">
     <div class="user-card">
-      <div class="avatar">JM</div>
+      <div class="avatar">{{ userInitials }}</div>
       <div class="user-info">
-        <div class="user-name">Juan Mendoza</div>
-        <div class="user-role">Administrador</div>
+        <div class="user-name">{{ currentUser?.nombre || 'Usuario PIT' }}</div>
+        <div class="user-role">{{ currentUser?.rol || 'Sin rol' }}</div>
       </div>
     </div>
   </div>
@@ -50,7 +50,7 @@
       <div class="page-path">{{ pagePath }}</div>
     </div>
     <div class="topbar-right">
-      <div class="topbar-date">📅 Miercoles, 22 Abr 2026</div>
+      <div class="topbar-date">📅 {{ formattedDate }}</div>
       <div class="notif-btn">🔔<div class="notif-dot"></div></div>
     </div>
   </div>

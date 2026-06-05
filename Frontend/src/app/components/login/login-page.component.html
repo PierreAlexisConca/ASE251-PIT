@@ -30,6 +30,7 @@
       <div class="form-subtitle">Ingresa tus credenciales para continuar</div>
 
       <form (ngSubmit)="onLogin()">
+        <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
         
         <div class="field">
           <label for="username">Usuario</label>
@@ -54,10 +55,12 @@
         </div>
 
         <div class="forgot">
-          <a href="javascript:void(0)">¿Olvidaste tu contraseña?</a>
+          <a href="javascript:void(0)" (click)="$event.preventDefault()">Solicita el reseteo al administrador</a>
         </div>
 
-        <button type="submit" class="btn-login">Iniciar Sesión</button>
+        <button type="submit" class="btn-login" [disabled]="loading">
+          {{ loading ? 'Validando...' : 'Iniciar Sesión' }}
+        </button>
       
       </form>
 
