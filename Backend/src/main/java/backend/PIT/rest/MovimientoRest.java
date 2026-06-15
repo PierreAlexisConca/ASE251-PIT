@@ -41,25 +41,33 @@ public class MovimientoRest {
     }
 
     @PostMapping
-    public ResponseEntity<MovimientoDTO> create(@RequestBody MovimientoDTO movimientoDTO) {
+    public ResponseEntity<?> create(@RequestBody MovimientoDTO movimientoDTO) {
         try {
             Movimiento movimiento = fromDTO(movimientoDTO);
             Movimiento guardado = movimientoService.save(movimiento);
             return ResponseEntity.ok(toDTO(guardado));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", "Error al procesar el movimiento"));
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MovimientoDTO> update(@PathVariable Long id, @RequestBody MovimientoDTO movimientoDTO) {
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody MovimientoDTO movimientoDTO) {
         if (!movimientoService.findById(id).isPresent()) {
             return ResponseEntity.notFound().build();
         }
-        Movimiento movimiento = fromDTO(movimientoDTO);
-        movimiento.setId(id);
-        Movimiento actualizado = movimientoService.save(movimiento);
-        return ResponseEntity.ok(toDTO(actualizado));
+        try {
+            Movimiento movimiento = fromDTO(movimientoDTO);
+            movimiento.setId(id);
+            Movimiento actualizado = movimientoService.save(movimiento);
+            return ResponseEntity.ok(toDTO(actualizado));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", "Error al actualizar el movimiento"));
+        }
     }
 
     @DeleteMapping("/{id}")

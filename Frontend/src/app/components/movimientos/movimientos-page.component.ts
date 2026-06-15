@@ -21,6 +21,7 @@ export class MovimientosPageComponent implements OnInit {
   tipoSeleccionado: 'Entrada' | 'Salida' = 'Entrada';
   filtroActivo: string = 'todos';
   errorMovimientos: string | null = null;
+  errorRegistro: string | null = null;
   horaSeleccionada = new Date().toISOString().slice(11, 16);
   
   nuevoMovimiento: Movimiento = {
@@ -73,33 +74,62 @@ export class MovimientosPageComponent implements OnInit {
   }
 
   cambiarTipo(tipo: 'Entrada' | 'Salida') {
+    this.errorRegistro = null;
     this.tipoSeleccionado = tipo;
     this.nuevoMovimiento.tipo = tipo;
   }
 
   onProductoChange() {
-    const producto = this.productos.find((p: Producto) => p.id === this.nuevoMovimiento.productoId);
+    this.errorRegistro = null;
+    const producto = this.productos.find((p: Producto) => p.id === Number(this.nuevoMovimiento.productoId));
     this.stockActual = producto?.stock || 0;
   }
 
   registrarMovimiento() {
-    if (this.nuevoMovimiento.productoId && this.nuevoMovimiento.cantidad) {
-      const payload: Movimiento = {
-        ...this.nuevoMovimiento,
-        fecha: `${this.nuevoMovimiento.fecha}T${this.horaSeleccionada}:00`,
-      };
+    this.errorRegistro = null;
 
-      this.movimientosService.create(payload).subscribe({
-        next: () => {
-          this.cargarMovimientos();
-          this.cargarProductos();
-          this.resetearFormulario();
-        }
-      });
+    const productoIdNum = Number(this.nuevoMovimiento.productoId);
+
+    if (!productoIdNum || productoIdNum === 0) {
+      this.errorRegistro = 'Debes seleccionar un producto válido.';
+      return;
     }
+
+    if (!this.nuevoMovimiento.cantidad || this.nuevoMovimiento.cantidad <= 0) {
+      this.errorRegistro = 'La cantidad debe ser mayor a 0.';
+      return;
+    }
+
+    if (this.nuevoMovimiento.tipo === 'Salida' && this.nuevoMovimiento.cantidad > this.stockActual) {
+      this.errorRegistro = `Stock insuficiente. Solo hay ${this.stockActual} unidades disponibles.`;
+      return;
+    }
+
+    const payload: Movimiento = {
+      ...this.nuevoMovimiento,
+      productoId: productoIdNum,
+      fecha: `${this.nuevoMovimiento.fecha}T${this.horaSeleccionada}:00`,
+    };
+
+    this.movimientosService.create(payload).subscribe({
+      next: () => {
+        this.cargarMovimientos();
+        this.cargarProductos();
+        this.resetearFormulario();
+      },
+      error: (err) => {
+        console.error('Error al registrar movimiento:', err);
+        if (err.error && err.error.message) {
+          this.errorRegistro = err.error.message;
+        } else {
+          this.errorRegistro = 'No se pudo registrar el movimiento. Intente más tarde.';
+        }
+      }
+    });
   }
 
   resetearFormulario() {
+    this.errorRegistro = null;
     this.nuevoMovimiento = {
       productoId: 0,
       usuarioId: 1,

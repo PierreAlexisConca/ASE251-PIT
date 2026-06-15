@@ -29,6 +29,9 @@
       </div>
 
       <div class="form-body">
+        <div *ngIf="errorRegistro" class="error-message-inline">
+          ⚠️ {{ errorRegistro }}
+        </div>
         <div class="form-section">
           <div class="field">
             <label>Producto</label>

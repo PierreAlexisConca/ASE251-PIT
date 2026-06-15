@@ -427,3 +427,32 @@
     min-width: 80px;
   }
 }
+
+.error-message {
+  grid-column: 1 / -1;
+  background-color: #fde8e8;
+  color: #e02424;
+  border: 1px solid #f8b4b4;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.error-message-inline {
+  background-color: #fde8e8;
+  color: #e02424;
+  border: 1px solid #f8b4b4;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
