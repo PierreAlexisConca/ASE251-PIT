@@ -4,6 +4,7 @@ import backend.PIT.model.Movimiento;
 import backend.PIT.model.Producto;
 import backend.PIT.repository.MovimientoRepository;
 import backend.PIT.repository.ProductoRepository;
+import backend.PIT.repository.SeccionRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -14,10 +15,12 @@ import java.util.Optional;
 public class MovimientoService {
     private final MovimientoRepository movimientoRepository;
     private final ProductoRepository productoRepository;
+    private final SeccionRepository seccionRepository;
 
-    public MovimientoService(MovimientoRepository movimientoRepository, ProductoRepository productoRepository) {
+    public MovimientoService(MovimientoRepository movimientoRepository, ProductoRepository productoRepository, SeccionRepository seccionRepository) {
         this.movimientoRepository = movimientoRepository;
         this.productoRepository = productoRepository;
+        this.seccionRepository = seccionRepository;
     }
 
     public Long sumEntradasBetween(LocalDateTime from, LocalDateTime to) {
@@ -80,16 +83,33 @@ public class MovimientoService {
         }
 
         String tipoNormalizado = movimiento.getTipo().trim();
+        boolean valid = false;
         if (tipoNormalizado.equalsIgnoreCase("entrada")) {
             movimiento.setTipo("Entrada");
-            return;
-        }
-        if (tipoNormalizado.equalsIgnoreCase("salida")) {
+            valid = true;
+        } else if (tipoNormalizado.equalsIgnoreCase("salida")) {
             movimiento.setTipo("Salida");
-            return;
+            valid = true;
         }
 
-        throw new IllegalArgumentException("Tipo de movimiento no valido");
+        if (!valid) {
+            throw new IllegalArgumentException("Tipo de movimiento no valido");
+        }
+
+        if (movimiento.getProductoId() != null) {
+            Producto producto = productoRepository.findById(movimiento.getProductoId())
+                .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
+
+            if (movimiento.getUnidad() == null || movimiento.getUnidad().trim().isEmpty()) {
+                movimiento.setUnidad(producto.getUnidad());
+            }
+
+            if (producto.getSeccionId() != null && (movimiento.getSeccion() == null || movimiento.getSeccion().trim().isEmpty())) {
+                seccionRepository.findById(producto.getSeccionId()).ifPresent(seccion -> {
+                    movimiento.setSeccion(seccion.getNombre());
+                });
+            }
+        }
     }
 
     private void applyStockEffect(Movimiento movimiento) {

@@ -83,6 +83,9 @@ export class MovimientosPageComponent implements OnInit {
     this.errorRegistro = null;
     const producto = this.productos.find((p: Producto) => p.id === Number(this.nuevoMovimiento.productoId));
     this.stockActual = producto?.stock || 0;
+    if (producto) {
+      this.nuevoMovimiento.unidad = producto.unidad;
+    }
   }
 
   registrarMovimiento() {
