@@ -31,6 +31,7 @@ public class ReportesController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
     ) {
+        System.out.println("DEBUG Backend summary: from=" + from + ", to=" + to);
         LocalDateTime f = from.atStartOfDay();
         LocalDateTime t = to.atTime(LocalTime.MAX);
         long entradas = Optional.ofNullable(movimientoService.sumEntradasBetween(f, t)).orElse(0L);
@@ -41,11 +42,13 @@ public class ReportesController {
         res.put("totalSalidas", salidas);
         res.put("saldo", entradas - salidas);
         res.put("productosConMovimiento", productosConMov.size());
+        System.out.println("DEBUG Backend summary results: " + res);
         return res;
     }
 
     @GetMapping("/monthly")
     public List<Map<String, Object>> monthly(@RequestParam int year) {
+        System.out.println("DEBUG Backend monthly: year=" + year);
         List<Object[]> rows = movimientoService.aggregateMonthly(year);
         List<Map<String, Object>> out = new ArrayList<>();
         for (Object[] r : rows) {
@@ -55,6 +58,7 @@ public class ReportesController {
             m.put("salidas", ((Number) r[2]).longValue());
             out.add(m);
         }
+        System.out.println("DEBUG Backend monthly results size: " + out.size());
         return out;
     }
 
@@ -63,6 +67,7 @@ public class ReportesController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
     ) {
+        System.out.println("DEBUG Backend distribution: from=" + from + ", to=" + to);
         LocalDateTime f = from.atStartOfDay();
         LocalDateTime t = to.atTime(LocalTime.MAX);
         List<Object[]> rows = movimientoService.distributionByCategory(f, t);
@@ -74,6 +79,7 @@ public class ReportesController {
             m.put("movimientos", ((Number) r[2]).longValue());
             out.add(m);
         }
+        System.out.println("DEBUG Backend distribution results: " + out);
         return out;
     }
 
@@ -83,6 +89,7 @@ public class ReportesController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @RequestParam(defaultValue = "5") int limit
     ) {
+        System.out.println("DEBUG Backend topProducts: from=" + from + ", to=" + to + ", limit=" + limit);
         LocalDateTime f = from.atStartOfDay();
         LocalDateTime t = to.atTime(LocalTime.MAX);
         List<Object[]> rows = movimientoService.topProductsBetween(f, t);
@@ -98,6 +105,7 @@ public class ReportesController {
             m.put("saldo", ((Number) r[3]).longValue() - ((Number) r[4]).longValue());
             out.add(m);
         }
+        System.out.println("DEBUG Backend topProducts results: " + out);
         return out;
     }
 }

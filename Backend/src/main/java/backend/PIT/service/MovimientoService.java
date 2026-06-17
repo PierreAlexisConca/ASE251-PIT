@@ -24,10 +24,12 @@ public class MovimientoService {
     }
 
     public Long sumEntradasBetween(LocalDateTime from, LocalDateTime to) {
+        System.out.println("DEBUG Service sumEntradasBetween: from=" + from + ", to=" + to);
         return movimientoRepository.sumEntradasBetween(from, to);
     }
 
     public Long sumSalidasBetween(LocalDateTime from, LocalDateTime to) {
+        System.out.println("DEBUG Service sumSalidasBetween: from=" + from + ", to=" + to);
         return movimientoRepository.sumSalidasBetween(from, to);
     }
 

@@ -64,7 +64,7 @@ public class DashboardController {
                 map.put("tipo", m.getTipo());
                 map.put("cantidad", m.getCantidad());
                 map.put("unidad", m.getUnidad());
-                map.put("fecha", m.getFecha() != null ? m.getFecha().toString() : null);
+                map.put("fecha", m.getFecha()); // Dejar que Jackson lo formatee como ISO
                 map.put("proveedor", m.getProveedor());
                 if (m.getProductoId() != null) {
                     Optional<Producto> prod = productoRepository.findById(m.getProductoId());

@@ -18,9 +18,9 @@ export class ReportesPageComponent implements OnInit {
   distribution: any[] = [];
   topProducts: any[] = [];
 
-  // default range: last 30 days
-  from = new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().slice(0,10);
-  to = new Date().toISOString().slice(0,10);
+  // default range: from Jan 1st of current year to today
+  from = `${new Date().getFullYear()}-01-01`;
+  to = new Date().toLocaleDateString('en-CA');
 
   constructor(public reportesService: ReportesService) {}
 
@@ -29,10 +29,41 @@ export class ReportesPageComponent implements OnInit {
   }
 
   loadAll(): void {
-    this.reportesService.summary(this.from, this.to).subscribe(res => this.summary = res);
-    this.reportesService.monthly(new Date(this.to).getFullYear()).subscribe(res => this.monthly = res);
-    this.reportesService.distribution(this.from, this.to).subscribe(res => this.distribution = res);
-    this.reportesService.topProducts(this.from, this.to, 5).subscribe(res => this.topProducts = res);
+    console.log('DEBUG Frontend loadAll: fetching data for range from=' + this.from + ', to=' + this.to);
+    
+    this.reportesService.summary(this.from, this.to).subscribe({
+      next: res => {
+        console.log('DEBUG Frontend summary response:', res);
+        this.summary = res;
+      },
+      error: err => console.error('DEBUG Frontend summary error:', err)
+    });
+
+    const year = new Date(this.to).getFullYear();
+    console.log('DEBUG Frontend monthly: fetching for year=' + year);
+    this.reportesService.monthly(year).subscribe({
+      next: res => {
+        console.log('DEBUG Frontend monthly response:', res);
+        this.monthly = res;
+      },
+      error: err => console.error('DEBUG Frontend monthly error:', err)
+    });
+
+    this.reportesService.distribution(this.from, this.to).subscribe({
+      next: res => {
+        console.log('DEBUG Frontend distribution response:', res);
+        this.distribution = res;
+      },
+      error: err => console.error('DEBUG Frontend distribution error:', err)
+    });
+
+    this.reportesService.topProducts(this.from, this.to, 5).subscribe({
+      next: res => {
+        console.log('DEBUG Frontend topProducts response:', res);
+        this.topProducts = res;
+      },
+      error: err => console.error('DEBUG Frontend topProducts error:', err)
+    });
   }
 
   generateReport(): void {
