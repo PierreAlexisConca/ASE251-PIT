@@ -6,7 +6,7 @@ import { Producto } from '../models/producto';
 import { ProductoFormModel } from '../models/producto-form.model';
 import { Categoria } from '../models/categoria';
 import { StockStatus } from '../models/stock-status';
-
+import { Seccion } from '../models/seccion';
 
 @Injectable({ providedIn: 'root' })
 export class InventarioService {
@@ -31,5 +31,9 @@ export class InventarioService {
 
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  getSecciones(): Observable<Seccion[]> {
+    return this.http.get<Seccion[]>(environment.apiUrl + '/api/secciones');
   }
 }
