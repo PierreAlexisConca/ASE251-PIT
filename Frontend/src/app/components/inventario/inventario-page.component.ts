@@ -1,14 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
 import { AdminLayoutComponent } from '../admin-layout/admin-layout.component';
 import { InventarioService } from '../../services/inventario.service';
 import { Producto } from '../../models/producto';
 import { ProductoFormModel } from '../../models/producto-form.model';
 import { StockStatus } from '../../models/stock-status';
-import { Categoria } from '../../models/categoria';
-import { Seccion } from '../../models/seccion';
 
 interface CategoryCounts {
   Todos: number;
@@ -37,52 +34,64 @@ export class InventarioPageComponent implements OnInit {
   editingProductId: number | null = null;
   loading = false;
   saving = false;
-  sortDirection: 'asc' | 'desc' = 'desc';
 
-  readonly statuses = ['Todos', 'Normal', 'Bajo', 'Por vencer', 'Critico'];
-  categories: Categoria[] = [];
-  sections: Seccion[] = [];
+  
+  readonly categories = ['Todos', 'GRANO', 'INSUMO', 'FERTILIZANTE', 'HERRAMIENTA', 'MAQUINARIA AGRÍCOLA', 'SEMILLAS CERTIFICADAS', 'PLAGUICIDAS ORGÁNICOS', 'FUNGICIDAS ESPECIALES', 'HERBICIDAS SELECTIVOS', 'BIOESTIMULANTES FOLIARES', 'MEJORADORES DE SUELO', 'EQUIPOS DE RIEGO'];
+  readonly sections = ['Todas', 'A', 'B', 'C', 'D', 'E', 'F', 'G'];
+  readonly statuses = ['Todos', 'ACTIVO', 'INACTIVO'];
+  readonly statusOptions = ['ACTIVO', 'INACTIVO'];
 
   products: Producto[] = [];
+
+  private readonly categoryIds: { [key: string]: number } = {
+    'GRANO': 1, 'INSUMO': 2, 'FERTILIZANTE': 3, 'HERRAMIENTA': 4,
+    'MAQUINARIA AGRÍCOLA': 5, 'SEMILLAS CERTIFICADAS': 6, 'PLAGUICIDAS ORGÁNICOS': 7,
+    'FUNGICIDAS ESPECIALES': 8, 'HERBICIDAS SELECTIVOS': 9, 'BIOESTIMULANTES FOLIARES': 10,
+    'MEJORADORES DE SUELO': 11, 'EQUIPOS DE RIEGO': 12
+  };
+
+  private readonly categoryNames: { [key: number]: string } = {
+    1: 'GRANO', 2: 'INSUMO', 3: 'FERTILIZANTE', 4: 'HERRAMIENTA',
+    5: 'MAQUINARIA AGRÍCOLA', 6: 'SEMILLAS CERTIFICADAS', 7: 'PLAGUICIDAS ORGÁNICOS',
+    8: 'FUNGICIDAS ESPECIALES', 9: 'HERBICIDAS SELECTIVOS', 10: 'BIOESTIMULANTES FOLIARES',
+    11: 'MEJORADORES DE SUELO', 12: 'EQUIPOS DE RIEGO'
+  };
+
+  private readonly sectionIds: { [key: string]: number } = {
+    'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6, 'G': 7
+  };
+
+  private readonly sectionNames: { [key: number]: string } = {
+    1: 'A', 2: 'B', 3: 'C', 4: 'D', 5: 'E', 6: 'F', 7: 'G'
+  };
 
   formModel: ProductoFormModel = this.emptyForm();
 
   ngOnInit(): void {
-    this.loadCatalogs();
-  }
-
-  get categoryFilterOptions(): string[] {
-    return ['Todos', ...this.categories.map((category) => category.nombre)];
-  }
-
-  get sectionFilterOptions(): string[] {
-    return ['Todas', ...this.sections.map((section) => section.nombre)];
-  }
-
-  loadCatalogs(): void {
-    this.loading = true;
-    forkJoin({
-      categories: this.inventarioService.getCategorias(),
-      sections: this.inventarioService.getSecciones(),
-      products: this.inventarioService.getAll(),
-    }).subscribe({
-      next: ({ categories, sections, products }) => {
-        this.categories = categories;
-        this.sections = sections;
-        this.products = products;
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-      },
-    });
+    this.loadProducts();
   }
 
   loadProducts(): void {
     this.loading = true;
     this.inventarioService.getAll().subscribe({
       next: (data) => {
-        this.products = data;
+        console.log('--- DATOS FINALES RECIBIDOS ---', data);
+
+        this.products = data.map((product: any) => {
+          // Si el backend devuelve la categoría null, intentamos buscar si tiene 'categoriaId' 
+          // O si no, como último recurso para que no salga '-', verificamos si venía guardado en el formModel
+          const catId = product.categoria?.id || product.categoriaId || (product.id === this.editingProductId ? this.categoryIds[String(this.formModel.categoria).toUpperCase()] : null);
+          const secId = product.seccion?.id || product.seccionId;
+
+          return {
+            ...product,
+            // Reconstruimos los objetos visuales con tus diccionarios de texto
+            categoria: catId ? { id: catId, nombre: this.categoryNames[catId] || '-' } : null,
+            seccion: secId ? { id: secId, nombre: this.sectionNames[secId] || '-' } : null,
+            status: product.status || 'ACTIVO'
+          };
+        });
+        
         this.loading = false;
       },
       error: () => {
@@ -92,17 +101,12 @@ export class InventarioPageComponent implements OnInit {
   }
 
   get filteredProducts(): Producto[] {
-    const filtered = this.products
-      .map((product) => ({ ...product, status: this.getStatus(product) }))
+    return this.products
       .filter((product) => this.matchesSearch(product))
       .filter((product) => this.matchesCategory(product))
       .filter((product) => this.matchesSection(product))
       .filter((product) => this.matchesStatus(product))
       .filter((product) => this.matchesTab(product));
-
-    return filtered.sort((a, b) =>
-      this.sortDirection === 'desc' ? b.stock - a.stock : a.stock - b.stock,
-    );
   }
 
   get categoryCounts(): CategoryCounts {
@@ -132,59 +136,64 @@ export class InventarioPageComponent implements OnInit {
       codigo: product.codigo,
       nombre: product.nombre,
       detalle: product.detalle,
-      categoria: product.categoria,
+      categoria: (product.categoria?.nombre ?? null) as any, // Pasa el texto actual al select
       stock: product.stock,
       unidad: product.unidad,
-      seccion: product.seccion,
+      seccion: (product.seccion?.nombre ?? null) as any,    // Pasa el texto actual al select
+      status: product.status || 'ACTIVO',
     };
     this.showForm = true;
   }
-
   closeForm(): void {
     this.showForm = false;
   }
 
   saveProduct(): void {
-    if (!this.formModel.categoria || !this.formModel.seccion) {
-      return;
-    }
-
     this.saving = true;
+
+    // 1. Capturamos los textos del formulario
+    const categoriaForm = this.formModel.categoria ? String(this.formModel.categoria).trim() : '';
+    const seccionForm = this.formModel.seccion ? String(this.formModel.seccion).trim() : '';
+
+    // 2. Buscamos los IDs numéricos correspondientes en tus mapas
+    const categoriaIdEncontrado = this.categoryIds[categoriaForm.toUpperCase()] || null;
+    const seccionIdEncontrado = this.sectionIds[seccionForm.toUpperCase()] || null;
+
+    // 3. ¡AQUÍ ESTÁ EL TRUCO!: Armamos la estructura de objetos anidados idéntica a tu ProductoDTO
+    const body = {
+      id: this.formModel.id,
+      codigo: this.formModel.codigo,
+      nombre: this.formModel.nombre,
+      detalle: this.formModel.detalle,
+      stock: this.formModel.stock,
+      unidad: this.formModel.unidad,
+      status: this.formModel.status,
+      // En lugar de enviar un número plano, enviamos el objeto que pide Java
+      categoria: categoriaIdEncontrado ? { id: categoriaIdEncontrado, nombre: categoriaForm } : null,
+      seccion: seccionIdEncontrado ? { id: seccionIdEncontrado, nombre: seccionForm } : null
+    };
+
+    // Imprimimos el objeto en consola para que verifiques que vaya perfecto
+    console.log('--- ENVIANDO A PRODUCTO_DTO ---');
+    console.log(body);
 
     const onComplete = () => {
       this.saving = false;
       this.closeForm();
-      this.loadProducts(); // Refresca la lista desde el backend
+      this.loadProducts(); // Recarga la tabla
     };
 
     if (this.editingProductId === null) {
-      this.inventarioService.create(this.formModel).subscribe({
+      this.inventarioService.create(body as any).subscribe({
         next: onComplete,
-        error: () => {
-          this.saving = false;
-        },
+        error: () => { this.saving = false; },
       });
     } else {
-      this.inventarioService.update(this.editingProductId, this.formModel).subscribe({
+      this.inventarioService.update(this.editingProductId, body as any).subscribe({
         next: onComplete,
-        error: () => {
-          this.saving = false;
-        },
+        error: () => { this.saving = false; },
       });
     }
-  }
-
-  viewProduct(product: Producto): void {
-    alert(
-      [
-        `Producto: ${product.nombre}`,
-        `Codigo: ${product.codigo}`,
-        `Categoria: ${product.categoria?.nombre ?? '-'}`,
-        `Seccion: ${product.seccion?.nombre ?? '-'}`,
-        `Stock: ${product.stock} ${product.unidad}`,
-        `Detalle: ${product.detalle || '-'}`,
-      ].join('\n'),
-    );
   }
 
   deleteProduct(product: Producto): void {
@@ -208,10 +217,6 @@ export class InventarioPageComponent implements OnInit {
     this.selectedSection = 'Todas';
     this.selectedStatus = 'Todos';
     this.activeTab = 'Todos';
-  }
-
-  toggleSortByStock(): void {
-    this.sortDirection = this.sortDirection === 'desc' ? 'asc' : 'desc';
   }
 
   getStockClass(product: Producto): string {
@@ -253,8 +258,8 @@ export class InventarioPageComponent implements OnInit {
       product.codigo,
       product.nombre,
       product.detalle,
-      product.categoria?.nombre ?? '',
-      product.seccion?.nombre ?? '',
+      product.categoria,
+      product.seccion,
       product.unidad,
     ]
       .join(' ')
@@ -271,7 +276,7 @@ export class InventarioPageComponent implements OnInit {
   }
 
   private matchesStatus(product: Producto): boolean {
-    return this.selectedStatus === 'Todos' || this.getStatus(product) === this.selectedStatus;
+    return this.selectedStatus === 'Todos' || product.status === this.selectedStatus;
   }
 
   private matchesTab(product: Producto): boolean {
@@ -288,6 +293,7 @@ export class InventarioPageComponent implements OnInit {
       stock: 0,
       unidad: 'kg',
       seccion: null,
+      status: 'ACTIVO',
     };
   }
 }

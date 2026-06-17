@@ -15,10 +15,10 @@
       />
     </div>
     <select class="filter-btn" [(ngModel)]="selectedCategory">
-      <option *ngFor="let category of categoryFilterOptions" [value]="category">🏷️ {{ category }}</option>
+      <option *ngFor="let category of categories" [value]="category">🏷️ {{ category }}</option>
     </select>
     <select class="filter-btn" [(ngModel)]="selectedSection">
-      <option *ngFor="let section of sectionFilterOptions" [value]="section">📍 {{ section }}</option>
+      <option *ngFor="let section of sections" [value]="section">📍 {{ section }}</option>
     </select>
     <select class="filter-btn" [(ngModel)]="selectedStatus">
       <option *ngFor="let status of statuses" [value]="status">⚠️ {{ status }}</option>
@@ -58,9 +58,7 @@
       <div class="table-info">
         Mostrando {{ filteredProducts.length }} de {{ products.length }} productos
       </div>
-      <button class="filter-btn sort-btn" type="button" (click)="toggleSortByStock()">
-        ↕ Ordenar por: Stock {{ sortDirection === 'desc' ? '↓' : '↑' }}
-      </button>
+      <button class="filter-btn sort-btn">↕ Ordenar por: Stock</button>
     </div>
 
     <div class="table-scroll">
@@ -111,13 +109,13 @@
             <td>{{ product.seccion?.nombre || '-' }}</td>
             <td>
               <span class="status-dot"
-                ><span class="dot" [ngClass]="getStatusDotClass(product)"></span
-                >{{ getStatus(product) }}</span
+                ><span class="dot" [ngClass]="product.status === 'ACTIVO' ? 'dot-ok' : 'dot-danger'"></span
+                >{{ product.status || '-' }}</span
               >
             </td>
             <td>
               <div class="actions">
-                <button class="act-btn" type="button" (click)="viewProduct(product)">👁</button
+                <button class="act-btn" type="button">👁</button
                 ><button class="act-btn" type="button" (click)="openEditProduct(product)">✏️</button
                 ><button class="act-btn" type="button" (click)="deleteProduct(product)">🗑</button>
               </div>
@@ -167,9 +165,8 @@
       <label class="modal-field">
         <span>Categoria</span>
         <select [(ngModel)]="formModel.categoria">
-          <option [ngValue]="null" disabled>Selecciona una categoria</option>
-          <option *ngFor="let category of categories" [ngValue]="category">
-            {{ category.nombre }}
+          <option *ngFor="let category of categories.slice(1)" [value]="category">
+            {{ category }}
           </option>
         </select>
       </label>
@@ -184,8 +181,15 @@
       <label class="modal-field">
         <span>Seccion</span>
         <select [(ngModel)]="formModel.seccion">
-          <option [ngValue]="null" disabled>Selecciona una seccion</option>
-          <option *ngFor="let section of sections" [ngValue]="section">{{ section.nombre }}</option>
+          <option *ngFor="let section of sections.slice(1)" [value]="section">{{ section }}</option>
+        </select>
+      </label>
+      <label class="modal-field">
+        <span>Estado</span>
+        <select [(ngModel)]="formModel.status">
+          <option *ngFor="let statusOption of statusOptions" [value]="statusOption">
+            {{ statusOption }}
+          </option>
         </select>
       </label>
     </div>

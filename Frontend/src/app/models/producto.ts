@@ -9,5 +9,5 @@ export interface Producto {
   stock: number;
   unidad: string;
   seccion: { id: number; nombre: string } | null;
-  status?: string;
+  status: string;
 }
