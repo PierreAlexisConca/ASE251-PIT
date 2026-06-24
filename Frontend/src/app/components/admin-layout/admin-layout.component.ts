@@ -10,7 +10,7 @@ import { AuthUser } from '../../models/auth-user';
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './admin-layout.component.html',
-  styleUrl: './admin-layout.component.scss'
+  styleUrl: './admin-layout.component.scss',
 })
 export class AdminLayoutComponent {
   @Input() pageTitle = '';

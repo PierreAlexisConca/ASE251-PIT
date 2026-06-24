@@ -109,7 +109,10 @@
             <td>{{ product.seccion?.nombre || '-' }}</td>
             <td>
               <span class="status-dot"
-                ><span class="dot" [ngClass]="product.status === 'ACTIVO' ? 'dot-ok' : 'dot-danger'"></span
+                ><span
+                  class="dot"
+                  [ngClass]="product.status === 'ACTIVO' ? 'dot-ok' : 'dot-danger'"
+                ></span
                 >{{ product.status || '-' }}</span
               >
             </td>
@@ -152,7 +155,7 @@
     <div class="modal-grid">
       <label class="modal-field">
         <span>Codigo</span>
-        <input [(ngModel)]="formModel.codigo" />
+        <input [(ngModel)]="formModel.codigo" disabled />
       </label>
       <label class="modal-field">
         <span>Nombre</span>

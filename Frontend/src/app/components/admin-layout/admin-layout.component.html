@@ -15,7 +15,7 @@
     </a>
 
     <a class="nav-item" [class.active]="active === 'inventario'" routerLink="/inventario">
-      <span class="icon">📦</span> Inventario <span class="nav-badge">3</span>
+      <span class="icon">📦</span> Inventario
     </a>
 
     <a class="nav-item" [class.active]="active === 'movimientos'" routerLink="/movimientos">
@@ -29,7 +29,9 @@
     <div class="nav-section">Configuracion</div>
     <a class="nav-item" routerLink="/reportes"><span class="icon">👥</span> Usuarios</a>
     <a class="nav-item" routerLink="/inventario"><span class="icon">⚙️</span> Configuracion</a>
-    <button class="nav-item" type="button" (click)="logout()"><span class="icon">🚪</span> Cerrar Sesion</button>
+    <button class="nav-item" type="button" (click)="logout()">
+      <span class="icon">🚪</span> Cerrar Sesion
+    </button>
   </nav>
 
   <div class="sidebar-footer">
@@ -51,7 +53,10 @@
     </div>
     <div class="topbar-right">
       <div class="topbar-date">📅 {{ formattedDate }}</div>
-      <div class="notif-btn">🔔<div class="notif-dot"></div></div>
+      <div class="notif-btn">
+        🔔
+        <div class="notif-dot"></div>
+      </div>
     </div>
   </div>
 

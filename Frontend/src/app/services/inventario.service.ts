@@ -12,7 +12,6 @@ import { Seccion } from '../models/seccion';
 export class InventarioService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl + '/api/productos';
-
   getAll(): Observable<Producto[]> {
     return this.http.get<Producto[]>(this.apiUrl);
   }
